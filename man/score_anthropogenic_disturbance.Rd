@@ -82,12 +82,16 @@ aggregate extraction areas (all sites within the polygon receive score 1.0).
 }
 
 \examples{
-\donttest{
-# Manual ICES VMS data (downloaded from ICES data portal)
-vms <- read.csv("ices_vms_sar_2022.csv")  # columns: lat, lon, sar, gear_type
-result <- score_anthropogenic_disturbance(result, trawling_data = vms)
+sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
 
-# Live ICES VMS fetch
-result <- score_anthropogenic_disturbance(result, fetch_live = TRUE)
+# Score using depth-proxy only (no external data needed)
+result <- score_anthropogenic_disturbance(result)
+table(result$anthropogenic_class)
+
+\dontrun{
+# With manual ICES VMS trawling intensity data
+vms <- read.csv("ices_vms_sar_2022.csv")
+result <- score_anthropogenic_disturbance(result, trawling_data = vms)
 }
 }

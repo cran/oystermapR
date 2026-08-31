@@ -68,10 +68,9 @@
 #'
 #' @export
 #' @examples
-#' \donttest{
-#' adcp <- read_nortek_adcp("S104456A008_AWE_Melfort_merged.csv")
-#' print(adcp)
-#' }
+#' adcp_f <- system.file("extdata", "example_bay_adcp.csv", package = "oystermapR")
+#' adcp <- read_nortek_adcp(adcp_f, verbose = FALSE)
+#' head(adcp[, c("lat", "lon", "current_velocity")])
 read_nortek_adcp <- function(file,
                              spatial_res          = 4L,
                              min_obs              = 5L,
@@ -305,17 +304,9 @@ read_nortek_adcp <- function(file,
 #'
 #' @export
 #' @examples
-#' \donttest{
-#' # Lowrance BioBase export (automatic column matching)
-#' biobase <- read_generic_csv("biobase_export.csv")
-#'
-#' # With explicit column mapping
-#' probe <- read_generic_csv(
-#'   "ctd_data.csv",
-#'   col_map = c(lat="Lat", lon="Lon", temperature="Temp", salinity="Sal",
-#'               dissolved_oxygen="DO_mgl")
-#' )
-#' }
+#' ctd_f <- system.file("extdata", "example_bay_ctd.csv", package = "oystermapR")
+#' ctd <- read_generic_csv(ctd_f, verbose = FALSE)
+#' head(ctd[, c("lat", "lon", "temperature", "salinity")])
 read_generic_csv <- function(file,
                              col_map         = NULL,
                              spatial_res     = 4L,
@@ -533,14 +524,11 @@ read_generic_csv <- function(file,
 #'
 #' @export
 #' @examples
-#' \donttest{
-#' # Stack two ADCP runs before merging with other sensors
-#' adcp_mon <- read_nortek_adcp("survey_monday.csv")
-#' adcp_thu <- read_nortek_adcp("survey_thursday.csv")
-#' adcp_all <- stack_surveys(adcp_mon, adcp_thu)
-#'
-#' survey <- merge_sensor_data(adcp = adcp_all, bathy = bathy_df)
-#' }
+#' adcp_f <- system.file("extdata", "example_bay_adcp.csv", package = "oystermapR")
+#' run1 <- read_nortek_adcp(adcp_f, verbose = FALSE)
+#' run2 <- read_nortek_adcp(adcp_f, verbose = FALSE)
+#' adcp_all <- stack_surveys(run1, run2)
+#' nrow(adcp_all)
 stack_surveys <- function(..., spatial_res = 4L, verbose = TRUE) {
 
   dfs <- list(...)
@@ -653,19 +641,12 @@ stack_surveys <- function(..., spatial_res = 4L, verbose = TRUE) {
 #'
 #' @export
 #' @examples
-#' \donttest{
-#' # Single run per sensor
-#' adcp    <- read_nortek_adcp("adcp.csv")
-#' biobase <- read_generic_csv("biobase.csv")
-#' survey  <- merge_sensor_data(adcp = adcp, biobase = biobase)
-#'
-#' # Multiple ADCP runs (different survey days) -- automatically stacked
-#' adcp1  <- read_nortek_adcp("survey_jan.csv")
-#' adcp2  <- read_nortek_adcp("survey_feb.csv")
-#' survey <- merge_sensor_data(adcp = list(adcp1, adcp2), biobase = biobase)
-#'
-#' result <- predict_oyster(survey, "ostrea_edulis", output_geotiff = "map.tif")
-#' }
+#' adcp_f <- system.file("extdata", "example_bay_adcp.csv", package = "oystermapR")
+#' ctd_f  <- system.file("extdata", "example_bay_ctd.csv",  package = "oystermapR")
+#' adcp   <- read_nortek_adcp(adcp_f, verbose = FALSE)
+#' ctd    <- read_generic_csv(ctd_f,  verbose = FALSE)
+#' survey <- merge_sensor_data(adcp = adcp, ctd = ctd)
+#' head(survey[, c("lat", "lon", "current_velocity", "temperature")])
 merge_sensor_data <- function(...,
                               spatial_res = 4L,
                               date_source = NULL,
@@ -836,7 +817,7 @@ merge_sensor_data <- function(...,
 #'
 #' @export
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' # Moored deployment (fixed position)
 #' adcp <- read_nortek_aquadopp(
 #'   "harbour_mouth_aqd.csv",
@@ -1058,7 +1039,7 @@ read_nortek_aquadopp <- function(file,
 #' @seealso [read_nortek_adcp()], [read_nortek_aquadopp()], [merge_sensor_data()]
 #' @export
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' # Vessel-mounted WorkHorse II (GPS embedded in binary)
 #' adcp <- read_rdi_adcp("survey_2024.000")
 #'
@@ -1272,7 +1253,7 @@ read_rdi_adcp <- function(file,
 #' @seealso [read_rdi_adcp()], [read_nortek_aquadopp()], [merge_sensor_data()]
 #' @export
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' # Moored RCM Blue at Strangford Lough narrows
 #' rcm <- read_aanderaa_csv(
 #'   "strangford_rcm_2024.csv",

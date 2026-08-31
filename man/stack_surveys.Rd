@@ -33,12 +33,9 @@ After stacking, pass the result into \code{\link[=merge_sensor_data]{merge_senso
 other sensor datasets as usual.
 }
 \examples{
-\donttest{
-# Stack two ADCP runs before merging with other sensors
-adcp_mon <- read_nortek_adcp("survey_monday.csv")
-adcp_thu <- read_nortek_adcp("survey_thursday.csv")
-adcp_all <- stack_surveys(adcp_mon, adcp_thu)
-
-survey <- merge_sensor_data(adcp = adcp_all, bathy = bathy_df)
-}
+adcp_f <- system.file("extdata", "example_bay_adcp.csv", package = "oystermapR")
+run1 <- read_nortek_adcp(adcp_f, verbose = FALSE)
+run2 <- read_nortek_adcp(adcp_f, verbose = FALSE)
+adcp_all <- stack_surveys(run1, run2)
+nrow(adcp_all)
 }

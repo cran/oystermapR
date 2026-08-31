@@ -67,17 +67,16 @@
 #'
 #' @export
 #' @examples
-#' \donttest{
-#' # Option 1: manual column already in data
+#' sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+#' result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
+#'
+#' # Option 1: manual class column already present in data
+#' result$water_class <- sample(c("A", "B", "C"), nrow(result), replace = TRUE)
 #' result <- add_shellfish_classification(result, class_col = "water_class")
 #'
-#' # Option 2: separate classified areas dataframe
-#' areas <- data.frame(lat = c(51.5), lon = c(-4.2), shellfish_class = c("B"))
-#' result <- add_shellfish_classification(result, classified_areas = areas)
-#'
-#' # Option 3: live fetch (internet required)
-#' result <- add_shellfish_classification(result, fetch_live = TRUE)
-#' }
+#' # Option 2: separate classified areas dataframe (spatially matched)
+#' areas <- data.frame(lat = c(50.3), lon = c(-4.2), shellfish_class = c("B"))
+#' result2 <- add_shellfish_classification(result, classified_areas = areas)
 add_shellfish_classification <- function(result,
                                           class_col        = NULL,
                                           classified_areas = NULL,

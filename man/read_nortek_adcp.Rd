@@ -75,8 +75,7 @@ exist, the deepest clean bin is used and quality is \code{"moderate"} or
 \code{"good"}.
 }
 \examples{
-\donttest{
-adcp <- read_nortek_adcp("S104456A008_AWE_Melfort_merged.csv")
-print(adcp)
-}
+adcp_f <- system.file("extdata", "example_bay_adcp.csv", package = "oystermapR")
+adcp <- read_nortek_adcp(adcp_f, verbose = FALSE)
+head(adcp[, c("lat", "lon", "current_velocity")])
 }

@@ -47,21 +47,16 @@ habitat (from \code{\link[=analyse_connectivity]{analyse_connectivity()}} if ava
 }
 }
 \examples{
-\donttest{
-result <- predict_oyster(survey, "ostrea_edulis")
+sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
 result <- assess_gear_feasibility(result)
-result <- analyse_connectivity(result)
 
 harbours <- data.frame(
-  name = c("Tarbert","Portavadie"),
-  lat  = c(55.865, 55.875),
-  lon  = c(-5.425, -5.300)
+  name = c("Plymouth"),
+  lat  = c(50.37),
+  lon  = c(-4.14)
 )
-
 result <- score_economic_viability(result, harbours = harbours,
-                                    target = "aquaculture")
-
-# Best aquaculture candidates
-subset(result, viability_class \%in\% c("Good","Excellent"))
-}
+  target = "aquaculture")
+table(result$viability_class)
 }

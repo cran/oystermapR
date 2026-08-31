@@ -14,6 +14,12 @@
 #'   Additional environmental columns are matched automatically; see
 #'   **Column Naming** below.
 #'
+#'   **Aragonite auto-calculation:** if the data contains `ph` (or a recognised
+#'   synonym) and `alkalinity` columns alongside `temperature` and `salinity`,
+#'   `predict_oyster()` will automatically compute `omega_aragonite` using the
+#'   in-house [calculate_aragonite()] function before scoring. You can also
+#'   pre-compute it and supply `omega_aragonite` directly.
+#'
 #' @param species Character string identifying the target oyster species.
 #'   Accepts the key (`"ostrea_edulis"`), latin name, or common name.
 #'   Use [list_species()] to see all available options.
@@ -56,6 +62,9 @@
 #' | Benthic communities   | `benthic_communities`, `benthic`, `community`        |
 #' | Biotope               | `biotope`, `biotopes`, `habitat`                     |
 #' | Fishing intensity     | `fishing_intensity`, `fishing`, `fishing_observed`   |
+#' | pH                    | `ph`, `pH`, `seawater_ph`, `sea_ph`, `water_ph`      |
+#' | Total alkalinity (umol/kg) | `alkalinity`, `total_alkalinity`, `ta`, `alk`, `alkalinity_umol_kg` |
+#' | Aragonite saturation  | `omega_aragonite`, `omega_arag`, `aragonite_saturation` |
 #'
 #' @return A dataframe (invisibly) with all original columns plus:
 #'   - **`season`**: detected season at each location/date.
@@ -71,8 +80,12 @@
 #'
 #' @export
 #' @examples
-#' # Minimal runnable example using the bundled Example Bay survey data
-#' \donttest{
+#' sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+#' result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
+#' table(result$suitability_class)
+#'
+#' \dontrun{
+#' # Full pipeline from raw sensor files
 #' adcp_f  <- system.file("extdata", "example_bay_adcp.csv",      package = "oystermapR")
 #' bathy_f <- system.file("extdata", "example_bay_soundings.xyz", package = "oystermapR")
 #' ctd_f   <- system.file("extdata", "example_bay_ctd.csv",       package = "oystermapR")
@@ -80,17 +93,7 @@
 #' bathy  <- read_soundings_xyz(bathy_f, verbose = FALSE)
 #' ctd    <- read_generic_csv(ctd_f,     verbose = FALSE)
 #' survey <- merge_sensor_data(adcp = adcp, bathy = bathy, ctd = ctd)
-#' result <- predict_oyster(survey, "ostrea_edulis", verbose = FALSE)
-#' table(result$suitability_class)
-#' }
-#'
-#' \donttest{
-#' # Using your own CSV file
-#' result <- predict_oyster(
-#'   data    = "my_survey.csv",
-#'   species = "ostrea_edulis",
-#'   output_geotiff = "oyster_suitability.tif"
-#' )
+#' predict_oyster(survey, "ostrea_edulis", verbose = FALSE)
 #' }
 predict_oyster <- function(data,
                            species,
@@ -148,13 +151,16 @@ predict_oyster <- function(data,
     df$season <- NA_character_
   }
 
-  # ---- 5. Apply exclusion criteria -------------------------------------------
+  # ---- 5. Auto-calculate aragonite saturation if pH + alkalinity present -----
+  df <- .auto_calculate_aragonite(df, verbose = verbose)
+
+  # ---- 6. Apply exclusion criteria -------------------------------------------
   df <- check_exclusions(df, tolerances)
 
-  # ---- 6. Score non-excluded locations ---------------------------------------
+  # ---- 7. Score non-excluded locations ---------------------------------------
   df <- score_locations(df, tolerances, verbose = verbose)
 
-  # ---- 7. Export GeoTIFF if requested ----------------------------------------
+  # ---- 8. Export GeoTIFF if requested ----------------------------------------
   if (!isFALSE(output_geotiff)) {
     tif_path <- if (isTRUE(output_geotiff)) {
       file.path(getwd(), paste0(gsub(" ", "_", tolower(tolerances$latin_name)),

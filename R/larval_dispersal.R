@@ -374,34 +374,10 @@
 #' Trimble A.C. et al. (2009) J Shellfish Research 28:43--53.
 #'
 #' @examples
-#' \donttest{
-#' result <- predict_oyster(survey, "ostrea_edulis")
-#'
-#' # Route 1 only -- built-in dispersal kernel
+#' sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+#' result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
 #' result <- score_larval_connectivity(result, species = "ostrea_edulis")
-#'
-#' # Route 1 with custom dispersal distance (e.g. strong tidal excursion)
-#' result <- score_larval_connectivity(result, species = "ostrea_edulis",
-#'                                     tidal_excursion_km = 10)
-#'
-#' # Route 1 with manual dispersal override
-#' result <- score_larval_connectivity(result, dispersal_km = 8)
-#'
-#' # Route 2 -- external connectivity matrix from OpenDrift
-#' cm <- read.csv("opendrift_connectivity.csv")
-#' # Required columns: source_lat, source_lon, dest_lat, dest_lon, weight
-#' result <- score_larval_connectivity(result,
-#'            species             = "ostrea_edulis",
-#'            connectivity_matrix = cm)
-#'
-#' # Inspect isolated patches -- need artificial seeding
-#' isolated <- subset(result,
-#'   larval_connectivity_class == "Isolated" & suitability_class == "High")
-#'
-#' # Strong candidates: high suitability AND high connectivity
-#' targets <- subset(result,
-#'   suitability_class == "High" & larval_connectivity_class == "Highly connected")
-#' }
+#' table(result$larval_connectivity_class)
 score_larval_connectivity <- function(result,
                                        species              = NULL,
                                        dispersal_km         = NULL,
@@ -756,8 +732,9 @@ score_larval_connectivity <- function(result,
                                   !is.na(suit) & suit >= 0.6, na.rm = TRUE)
     if (n_high_suit_isolated > 0)
       cli::cli_warn(c(
-        "!" = paste0(n_high_suit_isolated,
-                     " high-suitability site{?s} {is/are} isolated from larval supply."),
+        "!" = paste0(n_high_suit_isolated, " high-suitability ",
+                     if (n_high_suit_isolated == 1L) "site is" else "sites are",
+                     " isolated from larval supply."),
         "i" = "These are candidate sites for priority artificial seeding."
       ))
     if (!is.null(connectivity_matrix)) {
@@ -810,7 +787,7 @@ score_larval_connectivity <- function(result,
 #'
 #' @export
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' # After running OpenDrift simulation and exporting CSV:
 #' cm <- parse_opendrift_connectivity("opendrift_output.csv", bin_deg = 0.05)
 #'

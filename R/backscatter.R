@@ -96,17 +96,13 @@
 #'
 #' @export
 #' @examples
-#' \donttest{
-#' # Default calibration (300 kHz Nortek Signature)
-#' adcp <- read_nortek_adcp("survey.csv")
-#' adcp <- estimate_chlorophyll_from_backscatter(
-#'           adcp, backscatter_col = "amp_mean_dB",
-#'           frequency_khz = 300)
-#'
-#' # Custom calibration from water samples
-#' adcp <- estimate_chlorophyll_from_backscatter(
-#'           adcp, "amp_mean_dB", frequency_khz = 300,
-#'           calibration = c(a = 0.041, b = -0.52))
+#' adcp_f <- system.file("extdata", "example_bay_adcp.csv", package = "oystermapR")
+#' adcp   <- read_nortek_adcp(adcp_f, verbose = FALSE)
+#' # estimate_chlorophyll_from_backscatter requires an amp_mean_dB column
+#' # produced by read_nortek_adcp when the ADCP data contains amplitude bins
+#' if ("amp_mean_dB" %in% names(adcp)) {
+#'   adcp <- estimate_chlorophyll_from_backscatter(adcp, "amp_mean_dB",
+#'     frequency_khz = 300)
 #' }
 estimate_chlorophyll_from_backscatter <- function(df,
                                                    backscatter_col,
@@ -250,17 +246,15 @@ estimate_chlorophyll_from_backscatter <- function(df,
 #'
 #' @export
 #' @examples
-#' \donttest{
-#' # ADCP data with near-seabed backscatter column
-#' survey <- classify_substrate_from_backscatter(survey,
-#'             backscatter_col = "bottom_backscatter_db",
-#'             is_sv = TRUE)
-#'
-#' # The substrate_hardness_index column feeds directly into predict_oyster()
-#' # as the 'substrate_hardness' variable
-#' names(survey)[names(survey) == "substrate_hardness_index"] <- "substrate_hardness"
-#' result <- predict_oyster(survey, "ostrea_edulis")
-#' }
+#' # Minimal dataframe with a mean-volume backscatter column (dB re 1 m-1)
+#' df <- data.frame(
+#'   lat           = c(51.5, 51.6, 51.7),
+#'   lon           = c(-3.2, -3.2, -3.1),
+#'   sv_backscatter = c(-55.0, -68.0, -75.0)
+#' )
+#' df <- classify_substrate_from_backscatter(df, backscatter_col = "sv_backscatter",
+#'                                            is_sv = TRUE, verbose = FALSE)
+#' df[, c("substrate_hardness_index", "substrate_hardness_class")]
 classify_substrate_from_backscatter <- function(df,
                                                  backscatter_col,
                                                  is_sv        = FALSE,

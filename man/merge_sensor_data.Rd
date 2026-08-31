@@ -49,17 +49,10 @@ datasets are merged; cells that exist in only one dataset carry \code{NA} for
 variables from other sensors.
 }
 \examples{
-\donttest{
-# Single run per sensor
-adcp    <- read_nortek_adcp("adcp.csv")
-biobase <- read_generic_csv("biobase.csv")
-survey  <- merge_sensor_data(adcp = adcp, biobase = biobase)
-
-# Multiple ADCP runs (different survey days) -- automatically stacked
-adcp1  <- read_nortek_adcp("survey_jan.csv")
-adcp2  <- read_nortek_adcp("survey_feb.csv")
-survey <- merge_sensor_data(adcp = list(adcp1, adcp2), biobase = biobase)
-
-result <- predict_oyster(survey, "ostrea_edulis", output_geotiff = "map.tif")
-}
+adcp_f <- system.file("extdata", "example_bay_adcp.csv", package = "oystermapR")
+ctd_f  <- system.file("extdata", "example_bay_ctd.csv",  package = "oystermapR")
+adcp   <- read_nortek_adcp(adcp_f, verbose = FALSE)
+ctd    <- read_generic_csv(ctd_f,  verbose = FALSE)
+survey <- merge_sensor_data(adcp = adcp, ctd = ctd)
+head(survey[, c("lat", "lon", "current_velocity", "temperature")])
 }

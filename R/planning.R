@@ -100,17 +100,12 @@
 #'
 #' @export
 #' @examples
-#' \donttest{
-#' result <- predict_oyster(survey, "ostrea_edulis")
+#' sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+#' result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
 #' result <- assess_gear_feasibility(result)
-#'
-#' # Sites where longline is feasible AND suitability is High
-#' longline_sites <- subset(result,
-#'   gear_longline_feasible & suitability_class == "High")
-#'
 #' # Restoration reef sites (no farming licence needed)
 #' reef_sites <- subset(result, gear_restoration_reef_feasible)
-#' }
+#' nrow(reef_sites)
 assess_gear_feasibility <- function(result,
                                      gear_types   = names(.gear_specs),
                                      depth_col    = "depth",
@@ -205,7 +200,7 @@ assess_gear_feasibility <- function(result,
     cli::cli_h2("Gear Feasibility Assessment")
     for (gt in gear_types) {
       n_feas <- sum(result[[paste0("gear_", gt, "_feasible")]], na.rm = TRUE)
-      cli::cli_inform("  {.gear_specs[[gt]]$name}: {n_feas} / {n} locations feasible")
+      cli::cli_inform("  {(.gear_specs[[gt]]$name)}: {n_feas} / {n} locations feasible")
     }
     cli::cli_inform(c(
       "i" = paste0("Mean gear options per location: ",
@@ -249,23 +244,18 @@ assess_gear_feasibility <- function(result,
 #'
 #' @export
 #' @examples
-#' \donttest{
-#' result <- predict_oyster(survey, "ostrea_edulis")
+#' sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+#' result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
 #' result <- assess_gear_feasibility(result)
-#' result <- analyse_connectivity(result)
 #'
 #' harbours <- data.frame(
-#'   name = c("Tarbert","Portavadie"),
-#'   lat  = c(55.865, 55.875),
-#'   lon  = c(-5.425, -5.300)
+#'   name = c("Plymouth"),
+#'   lat  = c(50.37),
+#'   lon  = c(-4.14)
 #' )
-#'
 #' result <- score_economic_viability(result, harbours = harbours,
-#'                                     target = "aquaculture")
-#'
-#' # Best aquaculture candidates
-#' subset(result, viability_class %in% c("Good","Excellent"))
-#' }
+#'   target = "aquaculture")
+#' table(result$viability_class)
 score_economic_viability <- function(result,
                                       harbours = NULL,
                                       target   = c("restoration","aquaculture"),

@@ -55,8 +55,7 @@ differences between neighbouring grid cells (Horn 1981 method).
 }
 }
 \examples{
-\donttest{
-bathy <- read_soundings_xyz("kames_bay_soundings.xyz")
-survey <- merge_sensor_data(adcp = adcp_data, bathy = bathy)
-}
+bathy_f <- system.file("extdata", "example_bay_soundings.xyz", package = "oystermapR")
+bathy <- read_soundings_xyz(bathy_f, verbose = FALSE)
+head(bathy[, c("lat", "lon", "depth")])
 }

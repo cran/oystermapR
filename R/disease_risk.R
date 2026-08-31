@@ -102,21 +102,16 @@
 #'
 #' @export
 #' @examples
-#' \donttest{
-#' result <- predict_oyster(survey, "ostrea_edulis")
+#' sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+#' result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
 #'
 #' # Basic risk scoring (temperature-driven only)
 #' result <- score_disease_risk(result, "ostrea_edulis")
 #'
 #' # With known Bonamia-positive site locations
-#' infected <- data.frame(lat = c(55.8, 56.1), lon = c(-5.2, -5.4))
-#' result <- score_disease_risk(result, "ostrea_edulis",
-#'                               known_sites = infected)
-#'
-#' # Sites with high ecological suitability but also high disease risk
-#' flagged <- subset(result,
-#'   suitability_class == "High" & disease_risk_class %in% c("High","Critical"))
-#' }
+#' infected <- data.frame(lat = c(50.3, 50.4), lon = c(-4.2, -4.1))
+#' result <- score_disease_risk(result, "ostrea_edulis", known_sites = infected)
+#' table(result$disease_risk_class)
 score_disease_risk <- function(result,
                                 species       = "ostrea_edulis",
                                 known_sites   = NULL,
@@ -197,8 +192,9 @@ score_disease_risk <- function(result,
     )
     if (n_flagged > 0)
       cli::cli_warn(c(
-        "!" = paste0(n_flagged, " location{?s} combine High/Moderate suitability ",
-                     "with High/Critical disease risk."),
+        "!" = paste0(n_flagged, " ",
+                     if (n_flagged == 1L) "location" else "locations",
+                     " combine High/Moderate suitability with High/Critical disease risk."),
         "i" = "Filter with: subset(result, suitability_class %in% c('High','Moderate') & disease_risk_class %in% c('High','Critical'))"
       ))
   }

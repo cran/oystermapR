@@ -75,21 +75,18 @@ with spatially clustered records.
 }
 
 \examples{
-\donttest{
-records <- read.csv("nbn_ostrea_edulis.csv")
-result  <- predict_oyster(survey, "ostrea_edulis")
-
-# Standard validation
-std_val <- validate_against_records(result, records)
-std_val$auc  # may be optimistically high
-
-# Spatial block CV
-sp_cv <- spatial_block_cv(result, records, n_blocks = 5)
-sp_cv$mean_auc  # more honest estimate of transferability
-
-# Compare -- if sp_cv$mean_auc << std_val$auc, model is spatially
-# autocorrelated and transfers less well than initially apparent.
-}
+sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
+# Use all result rows with alternating presence/absence for a balanced dataset
+set.seed(42)
+idx <- seq_len(nrow(result))
+records <- data.frame(
+  lat      = result$lat[idx],
+  lon      = result$lon[idx],
+  presence = as.integer(runif(length(idx)) > 0.4)
+)
+sp_cv <- spatial_block_cv(result, records, n_blocks = 4)
+sp_cv$mean_auc
 }
 \references{
 Roberts et al. (2017) Ecography 40:913-929.

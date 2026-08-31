@@ -37,23 +37,15 @@
 #'
 #' @export
 #' @examples
-#' \donttest{
-#' # Compare all supported species
-#' comparison <- compare_species(survey)
-#'
-#' # Compare only well-characterised species
-#' comparison <- compare_species(survey, min_data_quality = "high")
-#'
-#' # Compare specific species and export per-species heatmaps
+#' sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
 #' comparison <- compare_species(
-#'   survey,
-#'   species    = c("ostrea_edulis", "magallana_gigas"),
-#'   output_dir = "comparison_maps/"
+#'   sample_csv,
+#'   species = c("ostrea_edulis", "magallana_gigas"),
+#'   verbose = FALSE
 #' )
-#'
-#' # Find sites suitable for both O. edulis AND M. gigas
+#' # Locations suitable for both species
 #' both_high <- subset(comparison, n_species_high >= 2)
-#' }
+#' nrow(both_high)
 compare_species <- function(data,
                             species          = NULL,
                             output_dir       = NULL,

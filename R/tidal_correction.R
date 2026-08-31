@@ -382,18 +382,18 @@
 #'
 #' @export
 #' @examples
-#' \donttest{
-#' # Survey conducted around high water at Oban -- tidal height ~3.1 m above CD
-#' survey_corrected <- correct_to_chart_datum(survey, tidal_height_m = 3.1)
-#'
-#' # Per-row heights from a tide gauge CSV matched to survey timestamps
-#' tide_series <- read.csv("oban_tide_gauge.csv")
-#' # (match to survey rows by timestamp -- user responsibility)
-#' survey_corrected <- correct_to_chart_datum(
-#'   survey,
-#'   tidal_height_m = tide_series$height_m
+#' # Minimal survey dataframe with depths measured below the water surface
+#' df <- data.frame(
+#'   lat   = c(56.41, 56.42, 56.43),
+#'   lon   = c(-5.47, -5.47, -5.46),
+#'   depth = c(5.5, 12.0, 8.3)
 #' )
-#' }
+#' # Survey conducted near high water at Oban; tidal height ~3.1 m above CD
+#' df_corrected <- correct_to_chart_datum(df, tidal_height_m = 3.1)
+#' df_corrected[, c("depth", "depth_raw_m")]
+#'
+#' # Per-row heights (e.g. from a matched tide gauge series)
+#' df_corrected2 <- correct_to_chart_datum(df, tidal_height_m = c(3.1, 3.0, 2.9))
 correct_to_chart_datum <- function(df,
                                    tidal_height_m = NULL,
                                    depth_col      = "depth",
@@ -540,15 +540,21 @@ correct_to_chart_datum <- function(df,
 #'
 #' @export
 #' @examples
-#' \donttest{
-#' # Automatic correction -- finds nearest port, predicts heights, corrects depths
-#' survey_corrected <- auto_tidal_correct(survey, datetime_col = "date")
+#' \dontrun{
+#' # Minimal survey dataframe near Oban, Scotland
+#' df <- data.frame(
+#'   lat   = c(56.41, 56.42, 56.43),
+#'   lon   = c(-5.47, -5.47, -5.46),
+#'   depth = c(5.5, 12.0, 8.3),
+#'   date  = as.POSIXct("2024-06-15 10:30:00", tz = "UTC")
+#' )
+#' # Automatic correction: finds Oban as nearest port, predicts tidal heights
+#' df_corrected <- auto_tidal_correct(df, datetime_col = "date")
+#' df_corrected[, c("depth", "tidal_height_pred_m")]
 #'
 #' # Tighten the distance threshold (only trust ports within 40 km)
-#' survey_corrected <- auto_tidal_correct(survey, max_port_dist_km = 40)
-#'
-#' # See which port was selected and inspect predicted heights
-#' survey_corrected$tidal_height_pred_m
+#' df_corrected2 <- auto_tidal_correct(df, datetime_col = "date",
+#'                                     max_port_dist_km = 40)
 #' }
 auto_tidal_correct <- function(df,
                                datetime_col     = "date",

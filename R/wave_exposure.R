@@ -84,20 +84,15 @@
 #'
 #' @export
 #' @examples
-#' \donttest{
-#' # Fetch column in result
-#' result$fetch_km <- c(2.5, 8.0, 25.0, 45.0)
-#' result <- score_wave_exposure(result, fetch_col = "fetch_km")
+#' sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+#' result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
 #'
 #' # Uniform fetch for a sheltered sea loch
 #' result <- score_wave_exposure(result, fetch_km = 3.5)
+#' table(result$wave_exposure_class)
 #'
-#' # Measured wave height column
-#' result <- score_wave_exposure(result, wave_height_col = "hs_m")
-#'
-#' # Depth proxy only (coarse)
-#' result <- score_wave_exposure(result)
-#' }
+#' # Depth proxy only (no fetch data)
+#' result2 <- score_wave_exposure(result)
 score_wave_exposure <- function(result,
                                  fetch_col       = NULL,
                                  wave_height_col = NULL,

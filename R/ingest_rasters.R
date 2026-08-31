@@ -47,10 +47,9 @@
 #'
 #' @export
 #' @examples
-#' \donttest{
-#' bathy <- read_soundings_xyz("kames_bay_soundings.xyz")
-#' survey <- merge_sensor_data(adcp = adcp_data, bathy = bathy)
-#' }
+#' bathy_f <- system.file("extdata", "example_bay_soundings.xyz", package = "oystermapR")
+#' bathy <- read_soundings_xyz(bathy_f, verbose = FALSE)
+#' head(bathy[, c("lat", "lon", "depth")])
 read_soundings_xyz <- function(file,
                                lon_col        = NULL,
                                lat_col        = NULL,
@@ -278,7 +277,7 @@ read_soundings_xyz <- function(file,
 #'
 #' @export
 #' @examples
-#' \donttest{
+#' \dontrun{
 #' bathy_df   <- read_sonar_tif("kames_bay_bathy.tif",    type = "bathy")
 #' sidescan_df <- read_sonar_tif("kames_bay_sidescan.tif", type = "sidescan")
 #' survey <- merge_sensor_data(bathy = bathy_df, sidescan = sidescan_df, adcp = adcp_df)

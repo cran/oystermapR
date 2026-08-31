@@ -52,18 +52,21 @@
 #'
 #' @export
 #' @examples
-#' \donttest{
-#' # Run QC before modelling
-#' survey_qc <- qc_survey_data(survey, datetime_col = "timestamp")
+#' # Minimal survey with one out-of-range temperature value
+#' df <- data.frame(
+#'   lat         = c(51.5, 51.6, 51.7),
+#'   lon         = c(-3.2, -3.2, -3.1),
+#'   temperature = c(12.1, 99.0, 11.8),   # 99 degC is an instrument spike
+#'   salinity    = c(33.1, 33.4, 33.0),
+#'   depth       = c(8.0, 9.0, 7.5)
+#' )
+#' qc <- qc_survey_data(df, apply_flags = FALSE, verbose = TRUE)
+#' # Inspect any flags raised
+#' flagged <- subset(qc, qc_status %in% c("review", "fail"))
+#' flagged[, c("temperature", "qc_flag_temperature", "qc_status")]
 #'
-#' # Inspect flagged rows
-#' flagged <- subset(survey_qc, qc_status %in% c("review","fail"))
-#' View(flagged)
-#'
-#' # Apply flags (replace flagged values with NA) before scoring
-#' survey_clean <- qc_survey_data(survey, apply_flags = TRUE)
-#' result <- predict_oyster(survey_clean, "ostrea_edulis")
-#' }
+#' # Apply flags: replace bad values with NA before scoring
+#' df_clean <- qc_survey_data(df, apply_flags = TRUE, verbose = FALSE)
 qc_survey_data <- function(df,
                              datetime_col    = "datetime",
                              iqr_k           = 3.0,
@@ -230,8 +233,9 @@ qc_survey_data <- function(df,
 
     if (sum(df$qc_status == "fail") > 0)
       cli::cli_warn(c(
-        "!" = paste0(sum(df$qc_status == "fail"),
-                     " row{?s} flagged as 'fail' (3+ issues)."),
+        "!" = paste0(sum(df$qc_status == "fail"), " ",
+                     if (sum(df$qc_status == "fail") == 1L) "row" else "rows",
+                     " flagged as 'fail' (3+ issues)."),
         "i" = "Inspect with: subset(df, qc_status == 'fail')",
         "i" = "Remove with:  df <- subset(df, qc_status != 'fail') or set apply_flags = TRUE"
       ))

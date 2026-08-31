@@ -72,7 +72,7 @@ that case supply \code{lat} and \code{lon} directly; all output rows receive tha
 fixed position.
 }
 \examples{
-\donttest{
+\dontrun{
 # Moored deployment (fixed position)
 adcp <- read_nortek_aquadopp(
   "harbour_mouth_aqd.csv",

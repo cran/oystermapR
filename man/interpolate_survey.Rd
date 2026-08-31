@@ -70,18 +70,16 @@ justified model for environmental data. If automatic fitting fails, a
 spherical model is tried; if that also fails, IDW is used.
 }
 \examples{
-\donttest{
-# Auto method -- kriging for dense variables, IDW for sparse
-grid <- interpolate_survey(survey, resolution_m = 100)
-result <- predict_oyster(grid, "ostrea_edulis")
+sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+survey <- read.csv(sample_csv)
 
 # Force IDW (fast, no gstat needed)
 grid <- interpolate_survey(survey, resolution_m = 200, method = "idw")
+head(grid[, c("lat", "lon", "temperature")])
 
-# Inspect which method was used per variable
-unique(grid$interp_method_temperature)
-
-# Kriging variance -- high values = uncertain interpolation
-hist(grid$krige_var_temperature)
+\dontrun{
+# Kriging (auto-selects where data are dense enough)
+grid_k <- interpolate_survey(survey, resolution_m = 100)
+unique(grid_k$interp_method_temperature)
 }
 }

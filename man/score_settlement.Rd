@@ -30,15 +30,15 @@ The output can be compared directly against the adult suitability score from
 recruitment site."
 }
 \examples{
-\donttest{
-adult_result     <- predict_oyster(survey, "ostrea_edulis")
-settlement_result <- score_settlement(survey, "ostrea_edulis")
-
-# Identify cells suitable for both adult survival AND natural recruitment
-combined <- merge(adult_result, settlement_result[, c("lat","lon",
-              "settlement_suitability","settlement_class")],
-              by = c("lat","lon"))
+sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+survey_df  <- read.csv(sample_csv)
+adult_result      <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
+settlement_result <- score_settlement(survey_df, "ostrea_edulis")
+# Cells suitable for both adult survival AND natural recruitment
+combined <- merge(adult_result,
+  settlement_result[, c("lat","lon","settlement_suitability","settlement_class")],
+  by = c("lat","lon"))
 combined$dual_suitable <- combined$suitability >= 0.6 &
                           combined$settlement_suitability >= 0.6
-}
+sum(combined$dual_suitable)
 }

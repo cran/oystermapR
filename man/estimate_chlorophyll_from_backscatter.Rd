@@ -82,16 +82,12 @@ df   <- estimate_chlorophyll_from_backscatter(
 }
 
 \examples{
-\donttest{
-# Default calibration (300 kHz Nortek Signature)
-adcp <- read_nortek_adcp("survey.csv")
-adcp <- estimate_chlorophyll_from_backscatter(
-          adcp, backscatter_col = "amp_mean_dB",
-          frequency_khz = 300)
-
-# Custom calibration from water samples
-adcp <- estimate_chlorophyll_from_backscatter(
-          adcp, "amp_mean_dB", frequency_khz = 300,
-          calibration = c(a = 0.041, b = -0.52))
+adcp_f <- system.file("extdata", "example_bay_adcp.csv", package = "oystermapR")
+adcp   <- read_nortek_adcp(adcp_f, verbose = FALSE)
+# estimate_chlorophyll_from_backscatter requires an amp_mean_dB column
+# produced by read_nortek_adcp when the ADCP data contains amplitude bins
+if ("amp_mean_dB" \%in\% names(adcp)) {
+  adcp <- estimate_chlorophyll_from_backscatter(adcp, "amp_mean_dB",
+    frequency_khz = 300)
 }
 }

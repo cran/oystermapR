@@ -35,12 +35,13 @@ utils::globalVariables(c(
 #'
 #' @export
 #' @examples
-#' \donttest{
-#' result <- predict_oyster(survey_df, "ostrea_edulis")
-#' generate_summary_pdf(result, "kames_bay_summary.pdf",
+#' sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+#' result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
+#' out_pdf <- file.path(tempdir(), "kames_bay_summary.pdf")
+#' generate_summary_pdf(result, out_pdf,
 #'                      title  = "Kames Bay -- Spring Survey",
-#'                      author = "T. Tucker")
-#' }
+#'                      author = "T. Tucker",
+#'                      open   = FALSE)
 generate_summary_pdf <- function(result,
                                   output  = "oyster_summary.pdf",
                                   species = "ostrea_edulis",

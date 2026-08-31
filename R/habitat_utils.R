@@ -47,13 +47,16 @@
 #'
 #' @export
 #' @examples
-#' \donttest{
-#' survey <- auto_tidal_correct(survey, datetime_col = "date")
-#' survey <- add_intertidal_flag(survey)
-#'
-#' # Check intertidal coverage
-#' table(survey$intertidal_zone)
-#' }
+#' # Minimal survey with chart-datum corrected depths.
+#' # Positive depth = below Chart Datum (always submerged).
+#' # Depth near 0 = intertidal zone. Negative = above MHWS (supratidal).
+#' df <- data.frame(
+#'   lat   = c(51.50, 51.51, 51.52),
+#'   lon   = c(-3.18, -3.18, -3.17),
+#'   depth = c(8.2, 0.4, -0.5)
+#' )
+#' df <- add_intertidal_flag(df, verbose = FALSE)
+#' table(df$intertidal_zone)
 add_intertidal_flag <- function(df,
                                  max_port_dist_km = 75,
                                  depth_col        = "depth",

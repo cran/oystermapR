@@ -61,7 +61,7 @@ low backscatter -> soft substrate (mud, fine sand).
 }
 }
 \examples{
-\donttest{
+\dontrun{
 bathy_df   <- read_sonar_tif("kames_bay_bathy.tif",    type = "bathy")
 sidescan_df <- read_sonar_tif("kames_bay_sidescan.tif", type = "sidescan")
 survey <- merge_sensor_data(bathy = bathy_df, sidescan = sidescan_df, adcp = adcp_df)

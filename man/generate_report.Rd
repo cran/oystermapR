@@ -71,7 +71,7 @@ tinytex::install_tinytex()
 }\if{html}{\out{</div>}}
 }
 \examples{
-\donttest{
+\dontrun{
 result <- predict_oyster(survey, "ostrea_edulis",
                          output_geotiff = "kames_bay.tif")
 

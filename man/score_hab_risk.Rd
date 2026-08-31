@@ -73,14 +73,18 @@ per event if absent
 }
 
 \examples{
-\donttest{
-# Manual data
-hab <- data.frame(lat=52.1, lon=-4.5, date="2022-07-15",
-                  genus="Alexandrium", toxin="PSP", closure_days=14)
-result <- score_hab_risk(result, hab_data=hab, species="ostrea_edulis")
+sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
 
-# Live ICES fetch
-result <- score_hab_risk(result, fetch_live=TRUE,
-                         date_range=c("2015-01-01","2024-12-31"))
-}
+# Manual HAB data
+hab <- data.frame(
+  lat          = c(50.25),
+  lon          = c(-4.12),
+  date         = "2022-07-15",
+  genus        = "Alexandrium",
+  toxin        = "PSP",
+  closure_days = 14
+)
+result <- score_hab_risk(result, hab_data = hab, species = "ostrea_edulis")
+table(result$hab_risk_class)
 }

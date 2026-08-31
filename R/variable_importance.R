@@ -78,18 +78,16 @@
 #' Zurell et al. (2020) Ecography 43:1261-1277.
 #'
 #' @examples
-#' \donttest{
-#' records <- read.csv("nbn_ostrea_edulis.csv")
-#' result  <- predict_oyster(survey, "ostrea_edulis")
-#'
-#' imp <- permutation_importance(result, records, n_permutations = 100)
+#' sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+#' result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
+#' set.seed(42)
+#' records <- data.frame(
+#'   lat      = result$lat[1:60],
+#'   lon      = result$lon[1:60],
+#'   presence = as.integer(runif(60) > 0.4)
+#' )
+#' imp <- permutation_importance(result, records, n_permutations = 10)
 #' print(imp)
-#' # Variable        Importance  Rank
-#' # temperature     0.183       1
-#' # salinity        0.091       2
-#' # depth           0.045       3
-#' # ...
-#' }
 permutation_importance <- function(predicted,
                                     records,
                                     presence_col     = "presence",
@@ -306,27 +304,11 @@ permutation_importance <- function(predicted,
 #' Zurell et al. (2020) Ecography 43:1261-1277.
 #'
 #' @examples
-#' \donttest{
-#' result <- predict_oyster(survey, "ostrea_edulis")
-#'
-#' # Temperature response curve
+#' sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+#' result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
 #' temp_pd <- sensitivity_analysis(result, "ostrea_edulis", "temperature")
-#' plot(temp_pd$x, temp_pd$suitability, type="l",
-#'      xlab="Temperature (degrees C)", ylab="Suitability",
-#'      main="Partial dependence: temperature")
-#'
-#' # Salinity response (summer)
-#' sal_pd <- sensitivity_analysis(result, "ostrea_edulis", "salinity",
-#'                                season = "summer")
-#'
-#' # ggplot2 version
-#' library(ggplot2)
-#' ggplot(temp_pd, aes(x, suitability)) +
-#'   geom_line(colour="steelblue", linewidth=1.2) +
-#'   geom_ribbon(aes(ymin=0, ymax=suitability), alpha=0.2, fill="steelblue") +
-#'   labs(x="Temperature (degrees C)", y="Suitability [0-1]") +
-#'   theme_minimal()
-#' }
+#' plot(temp_pd$x, temp_pd$suitability, type = "l",
+#'      xlab = "Temperature (degrees C)", ylab = "Suitability [0-1]")
 sensitivity_analysis <- function(predicted,
                                   species,
                                   variable,

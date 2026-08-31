@@ -74,15 +74,13 @@ contains calibrated volume backscatter (Sv in dB), set \code{is_sv = TRUE}
 and a sign-flip is applied (less negative Sv = stronger return = harder).
 }
 \examples{
-\donttest{
-# ADCP data with near-seabed backscatter column
-survey <- classify_substrate_from_backscatter(survey,
-            backscatter_col = "bottom_backscatter_db",
-            is_sv = TRUE)
-
-# The substrate_hardness_index column feeds directly into predict_oyster()
-# as the 'substrate_hardness' variable
-names(survey)[names(survey) == "substrate_hardness_index"] <- "substrate_hardness"
-result <- predict_oyster(survey, "ostrea_edulis")
-}
+# Minimal dataframe with a mean-volume backscatter column (dB re 1 m-1)
+df <- data.frame(
+  lat           = c(51.5, 51.6, 51.7),
+  lon           = c(-3.2, -3.2, -3.1),
+  sv_backscatter = c(-55.0, -68.0, -75.0)
+)
+df <- classify_substrate_from_backscatter(df, backscatter_col = "sv_backscatter",
+                                           is_sv = TRUE, verbose = FALSE)
+df[, c("substrate_hardness_index", "substrate_hardness_class")]
 }

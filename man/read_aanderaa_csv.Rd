@@ -51,7 +51,7 @@ leave as \code{"auto"} and the function will detect units from the column header
 or by range-checking the data.
 }
 \examples{
-\donttest{
+\dontrun{
 # Moored RCM Blue at Strangford Lough narrows
 rcm <- read_aanderaa_csv(
   "strangford_rcm_2024.csv",

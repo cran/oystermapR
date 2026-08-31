@@ -63,25 +63,22 @@ interpolation -- the same technique used by systems like Lowrance BioBase.
 The result looks like a fluid heat surface over your survey area rather than
 isolated point squares.
 
-The output GeoTIFF contains three bands:
+The output GeoTIFF contains five bands:
 \enumerate{
 \item \strong{suitability} -- IDW-interpolated score [0, 1]. Use this for the heatmap.
 \item \strong{excluded_mask} -- 1 where a survey point was hard-excluded, 0 otherwise.
 \item \strong{n_observations} -- how many survey points fell within each raster cell
 (data density diagnostic).
+\item \strong{dist_to_nearest_m} -- distance in metres from each cell centre to the
+nearest survey point (use as a QGIS transparency mask to fade extrapolated areas).
+\item \strong{n_layers_scored} -- number of environmental variables that contributed to
+the suitability score at each survey point (data completeness overlay).
 }
 }
 \examples{
-\donttest{
-result <- predict_oyster("survey.csv", "ostrea_edulis")
-
-# Standard export -- smooth heatmap with auto radius and contours
-export_geotiff(result, "oyster_heatmap.tif")
-
-# Finer resolution for a small harbour survey
-export_geotiff(result, "oyster_heatmap.tif", resolution = 0.0001)
-
-# Override IDW radius explicitly (e.g. sparse transect data)
-export_geotiff(result, "oyster_heatmap.tif", idw_max_dist = 0.005)
-}
+sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
+out_tif <- file.path(tempdir(), "oyster_heatmap.tif")
+export_geotiff(result, out_tif)
+file.exists(out_tif)
 }

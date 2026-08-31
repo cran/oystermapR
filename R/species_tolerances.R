@@ -158,9 +158,10 @@
       depth = list(
         rank = 4,
         type = "optimal_range",
-        optimal_min = 0,   optimal_max = 30,
-        acceptable_max = 50, absolute_max = 80,
-        unit = "metres"
+        optimal_min = 2,   optimal_max = 30,
+        poor_min    = 0,   acceptable_max = 50, absolute_max = 80,
+        unit = "metres",
+        note = "Primarily subtidal; intertidal (0-2 m) scores lower than optimal subtidal range. Source: Pogoda et al. (2023)."
       ),
 
       biotope = list(
@@ -190,11 +191,49 @@
         unit = "rugosity_index"
       ),
 
+      ph = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 7.9,  optimal_max = 8.3,
+        poor_min    = 7.6,  acceptable_max = 8.5, absolute_max = 8.6,
+        unit = "pH units",
+        note = "Shell calcification impaired below pH 7.8; optimal 7.9-8.3 for NE Atlantic coastal water. Hard lower bound 7.6 (chronic sub-lethal stress). Source: Gazeau et al. (2010) ICES J Mar Sci 67; Bamber (1990) Mar Biol 107."
+      ),
+
+      omega_aragonite = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 1.8,  optimal_max = 3.5,
+        poor_min    = 1.0,  acceptable_max = 4.5, absolute_max = 5.5,
+        unit = "Omega (dimensionless)",
+        note = "O. edulis is sensitive to aragonite undersaturation; larvae strongly impaired below Omega 1.5, adults below Omega 1.0. Optimal 1.8-3.5 reflects typical NE Atlantic shelf conditions. Source: Gazeau et al. (2010); Bamber (1990)."
+      ),
+
       slope = list(
         rank = 6,
         type = "threshold_decay",
         optimal_max = 5, acceptable_max = 15, poor_max = 30,
         unit = "degrees"
+      ),
+
+      salinity = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 28.0, optimal_max = 35.0,
+        poor_min    = 20.0, acceptable_min = 24.0,
+        acceptable_max = 38.0, absolute_max = 40.0,
+        unit = "PSU",
+        note = "Within-acceptable-range gradient; rewards optimal salinity. Stenohaline flat oyster prefers 28-35 PSU. Source: Pogoda et al. (2023)."
+      ),
+
+      dissolved_oxygen = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 6.0, optimal_max = 10.0,
+        poor_min    = 4.0, acceptable_min = 5.0,
+        acceptable_max = 14.0, absolute_max = 20.0,
+        unit = "mg/L",
+        note = "Scored above exclusion threshold; rewards well-oxygenated sites. Optimal 6-10 mg/L. Source: Newell (2004) ICES CM."
       )
     ),
 
@@ -399,12 +438,50 @@
         unit = "rugosity_index"
       ),
 
+      ph = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 7.8,  optimal_max = 8.3,
+        poor_min    = 7.5,  acceptable_max = 8.5, absolute_max = 8.6,
+        unit = "pH units",
+        note = "M. gigas is more tolerant of low pH than O. edulis; larvae impaired below pH 7.6, adults below 7.5. Optimal 7.8-8.3. Source: Gazeau et al. (2010); Kurihara et al. (2007) Mar Ecol Prog Ser 346."
+      ),
+
+      omega_aragonite = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 1.6,  optimal_max = 3.5,
+        poor_min    = 0.8,  acceptable_max = 4.5, absolute_max = 5.5,
+        unit = "Omega (dimensionless)",
+        note = "M. gigas shows moderate resilience to low Omega; adults can survive short-term undersaturation. Larvae more sensitive (Omega < 1.5 impairs shell growth). Source: Kurihara et al. (2007); Gazeau et al. (2010)."
+      ),
+
       slope = list(
         rank = 6,
         type = "threshold_decay",
         optimal_max = 8,  acceptable_max = 20, poor_max = 35,
         unit = "degrees",
         note = "More tolerant of slope than O. edulis due to cemented habit."
+      ),
+
+      salinity = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 20.0, optimal_max = 35.0,
+        poor_min    = 12.0, acceptable_min = 15.0,
+        acceptable_max = 40.0, absolute_max = 43.0,
+        unit = "PSU",
+        note = "Within-range salinity gradient. Wide tolerance but optimal 20-35 PSU for growth. Source: FAO (2004)."
+      ),
+
+      dissolved_oxygen = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 5.0, optimal_max = 10.0,
+        poor_min    = 3.0, acceptable_min = 4.0,
+        acceptable_max = 14.0, absolute_max = 20.0,
+        unit = "mg/L",
+        note = "Scored above exclusion threshold. M. gigas more tolerant of low DO than O. edulis; optimal 5-10 mg/L. Source: Bayne et al. (2017)."
       )
     ),
 
@@ -626,10 +703,48 @@
         note = "Estuarine origin; higher tolerance of polychaete-dominated communities than O. edulis. Sabellaria worm reef added as documented estuarine associate."
       ),
 
+      ph = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 7.8,  optimal_max = 8.3,
+        poor_min    = 7.5,  acceptable_max = 8.5, absolute_max = 8.6,
+        unit = "pH units",
+        note = "Estimated from C. gigas analogy (closely related). Iberian estuarine populations may encounter lower pH episodically during upwelling events. Source: Gazeau et al. (2010)."
+      ),
+
+      omega_aragonite = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 1.6,  optimal_max = 3.5,
+        poor_min    = 0.8,  acceptable_max = 4.5, absolute_max = 5.5,
+        unit = "Omega (dimensionless)",
+        note = "Estimated from C. gigas analogy; Iberian upwelling events can drive Omega < 1.5 episodically. Adults tolerate short-term undersaturation. Source: estimated."
+      ),
+
       slope = list(
         rank = 6,  type = "threshold_decay",
         optimal_max = 6,  acceptable_max = 18,  poor_max = 35,
         unit = "degrees"
+      ),
+
+      salinity = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 22.0, optimal_max = 35.0,
+        poor_min    = 15.0, acceptable_min = 18.0,
+        acceptable_max = 38.0, absolute_max = 40.0,
+        unit = "PSU",
+        note = "Estuarine species; optimal 22-35 PSU. Narrower than M. gigas due to Iberian/Atlantic coast distribution. Source: Flores-Vergara et al. (2004)."
+      ),
+
+      dissolved_oxygen = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 5.0, optimal_max = 10.0,
+        poor_min    = 3.0, acceptable_min = 4.0,
+        acceptable_max = 14.0, absolute_max = 20.0,
+        unit = "mg/L",
+        note = "Estuarine conditions common; optimal 5-10 mg/L. Estimated by analogy with M. gigas. Source: Huvet et al. (2018)."
       )
     ),
 
@@ -869,11 +984,49 @@
         note = "Seagrass communities elevated based on documented Mar Menor habitat use. Caulerpa penalised as invasive species colonising similar habitats in Mediterranean."
       ),
 
+      ph = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 7.85, optimal_max = 8.3,
+        poor_min    = 7.6,  acceptable_max = 8.5, absolute_max = 8.6,
+        unit = "pH units",
+        note = "Mediterranean/lagoonal populations may experience wider pH variation than open Atlantic. Optimal range similar to O. edulis; Mar Menor lagoon pH 7.8-8.4 typical. Source: estimated from O. edulis analogy."
+      ),
+
+      omega_aragonite = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 1.8,  optimal_max = 3.5,
+        poor_min    = 1.0,  acceptable_max = 4.5, absolute_max = 5.5,
+        unit = "Omega (dimensionless)",
+        note = "Mediterranean lagoon waters typically Omega 2.0-4.0; poor_min = 1.0 consistent with flat oyster sensitivity. Source: estimated from O. edulis analogy."
+      ),
+
       slope = list(
         rank = 6,  type = "threshold_decay",
         optimal_max = 5,  acceptable_max = 12,  poor_max = 25,
         unit = "degrees",
         note = "Lagoonal origin; small body size requires stable low-slope substrate."
+      ),
+
+      salinity = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 28.0, optimal_max = 40.0,
+        poor_min    = 18.0, acceptable_min = 24.0,
+        acceptable_max = 45.0, absolute_max = 47.0,
+        unit = "PSU",
+        note = "Hypersaline-tolerant lagoonal flat oyster (Mediterranean, Black Sea). Optimal 28-40 PSU. Source: Boglino et al. (2012)."
+      ),
+
+      dissolved_oxygen = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 6.0, optimal_max = 10.0,
+        poor_min    = 3.5, acceptable_min = 5.0,
+        acceptable_max = 14.0, absolute_max = 20.0,
+        unit = "mg/L",
+        note = "Lagoonal flat oyster; oxygen conditions variable in lagoon habitats. Estimated by analogy with O. edulis."
       )
     ),
 
@@ -1111,11 +1264,49 @@
         note = "Intertidal rocky habitat; moderate rugosity beneficial for refuge from desiccation and wave stress."
       ),
 
+      ph = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 7.8,  optimal_max = 8.3,
+        poor_min    = 7.6,  acceptable_max = 8.5, absolute_max = 8.6,
+        unit = "pH units",
+        note = "Pacific coast upwelling exposes O. lurida to episodic low pH; more tolerant than Atlantic species. Restoration sites in San Francisco Bay monitored pH 7.7-8.3. Source: Hettinger et al. (2012) Glob Change Biol."
+      ),
+
+      omega_aragonite = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 1.5,  optimal_max = 3.5,
+        poor_min    = 0.9,  acceptable_max = 4.5, absolute_max = 5.5,
+        unit = "Omega (dimensionless)",
+        note = "Pacific coast upwelling drives chronic low-Omega exposure; O. lurida populations persist at Omega ~1.0-1.5. More resilient than Atlantic flat oysters. Source: Hettinger et al. (2012); Waldbusser et al. (2015) Nat Clim Change."
+      ),
+
       slope = list(
         rank = 6,  type = "threshold_decay",
         optimal_max = 8,  acceptable_max = 20, poor_max = 35,
         unit = "degrees",
         note = "Intertidal species; moderate slope tolerance. Steep rocky intertidal is natural habitat."
+      ),
+
+      salinity = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 20.0, optimal_max = 32.0,
+        poor_min    = 10.0, acceptable_min = 15.0,
+        acceptable_max = 36.0, absolute_max = 38.0,
+        unit = "PSU",
+        note = "More euryhaline than O. edulis; optimal 20-32 PSU in estuarine bays. Source: Wasson et al. (2020)."
+      ),
+
+      dissolved_oxygen = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 6.0, optimal_max = 10.0,
+        poor_min    = 4.0, acceptable_min = 5.0,
+        acceptable_max = 14.0, absolute_max = 20.0,
+        unit = "mg/L",
+        note = "Pacific NW coastal waters; optimal 6-10 mg/L. Sensitive to seasonal hypoxia. Source: Hessing-Lewis et al. (2011)."
       )
     ),
 
@@ -1323,11 +1514,39 @@
         note = "Reef-forming species; moderate-to-high rugosity substrates support recruitment."
       ),
 
+      ph = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 7.8,  optimal_max = 8.3,
+        poor_min    = 7.5,  acceptable_max = 8.5, absolute_max = 8.6,
+        unit = "pH units",
+        note = "Estuarine species; tolerates wider pH range than open-coast oysters. Chesapeake Bay pH 7.5-8.2 typical; growth impaired below pH 7.5 sustained. Source: Gazeau et al. (2010); Miller et al. (2009) Aquat Biol."
+      ),
+
+      omega_aragonite = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 1.6,  optimal_max = 3.5,
+        poor_min    = 0.8,  acceptable_max = 4.5, absolute_max = 5.5,
+        unit = "Omega (dimensionless)",
+        note = "Chesapeake Bay experiences seasonal low Omega in hypoxic zones; C. virginica tolerates moderate undersaturation. Larvae more sensitive. Source: Miller et al. (2009); Waldbusser et al. (2011) J Mar Res."
+      ),
+
       slope = list(
         rank = 6,
         type = "threshold_decay",
         optimal_max = 5,  acceptable_max = 15, poor_max = 30,
         unit = "degrees"
+      ),
+
+      dissolved_oxygen = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 5.0, optimal_max = 10.0,
+        poor_min    = 2.5, acceptable_min = 4.0,
+        acceptable_max = 14.0, absolute_max = 20.0,
+        unit = "mg/L",
+        note = "Highly tolerant of low DO (estuarine species); optimal 5-10 mg/L. Source: Lenihan & Peterson (1998) Mar Ecol Prog Ser."
       )
     ),
 
@@ -1525,12 +1744,40 @@
         unit = "rugosity_index"
       ),
 
+      ph = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 7.8,  optimal_max = 8.3,
+        poor_min    = 7.5,  acceptable_max = 8.5, absolute_max = 8.6,
+        unit = "pH units",
+        note = "NSW estuaries range pH 7.8-8.3; Dove & Sammut (2007) documented growth impairment under acidified estuary conditions. Optimal 7.8-8.3. Source: Dove & Sammut (2007) J Shellfish Res 26."
+      ),
+
+      omega_aragonite = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 1.6,  optimal_max = 3.5,
+        poor_min    = 0.8,  acceptable_max = 4.5, absolute_max = 5.5,
+        unit = "Omega (dimensionless)",
+        note = "NSW estuaries generally Omega 2.0-3.5; acidified estuary conditions (Acid Sulphate Soil drainage) can reduce Omega significantly. Source: Dove & Sammut (2007)."
+      ),
+
       slope = list(
         rank = 6,
         type = "threshold_decay",
         optimal_max = 10, acceptable_max = 25, poor_max = 40,
         unit = "degrees",
         note = "Rocky intertidal species; higher slope tolerance than subtidal species."
+      ),
+
+      dissolved_oxygen = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 5.0, optimal_max = 10.0,
+        poor_min    = 3.0, acceptable_min = 4.0,
+        acceptable_max = 14.0, absolute_max = 20.0,
+        unit = "mg/L",
+        note = "Intertidal-dominant; DO fluctuates with emersion/tidal cycles. Optimal 5-10 mg/L. Source: Nell (2002) Reviews in Aquaculture."
       )
     ),
 
@@ -1690,11 +1937,39 @@
         note = "Estimated from M. gigas analogue."
       ),
 
+      ph = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 7.8,  optimal_max = 8.3,
+        poor_min    = 7.5,  acceptable_max = 8.5, absolute_max = 8.6,
+        unit = "pH units",
+        note = "Estimated from M. gigas analogy; no species-specific pH tolerance data available. Optimal 7.8-8.3."
+      ),
+
+      omega_aragonite = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 1.6,  optimal_max = 3.5,
+        poor_min    = 0.8,  acceptable_max = 4.5, absolute_max = 5.5,
+        unit = "Omega (dimensionless)",
+        note = "Estimated from M. gigas analogy; no species-specific data available."
+      ),
+
       slope = list(
         rank = 6,
         type = "threshold_decay",
         optimal_max = 5, acceptable_max = 15, poor_max = 30,
         unit = "degrees"
+      ),
+
+      dissolved_oxygen = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 5.0, optimal_max = 10.0,
+        poor_min    = 3.0, acceptable_min = 4.0,
+        acceptable_max = 14.0, absolute_max = 20.0,
+        unit = "mg/L",
+        note = "Pacific estuarine species; DO tolerance similar to M. gigas. Estimated by analogy."
       )
     ),
 
@@ -1835,11 +2110,48 @@
         note = "High turbidity tolerance inferred from Chinese river estuary habitat; significantly higher than European flat oyster."
       ),
 
+      omega_aragonite = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 1.5,  optimal_max = 3.5,
+        poor_min    = 0.7,  acceptable_max = 4.5, absolute_max = 5.5,
+        unit = "Omega (dimensionless)",
+        note = "Yangtze estuarine habitat; river outflow lowers Omega episodically. Estimated higher tolerance than O. edulis. Source: estimated."
+      ),
+
+      ph = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 7.8,  optimal_max = 8.3,
+        poor_min    = 7.5,  acceptable_max = 8.5, absolute_max = 8.6,
+        unit = "pH units",
+        note = "Estimated from M. gigas analogy; no species-specific pH tolerance data available. Optimal 7.8-8.3."
+      ),
+
+      omega_aragonite = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 1.6,  optimal_max = 3.5,
+        poor_min    = 0.8,  acceptable_max = 4.5, absolute_max = 5.5,
+        unit = "Omega (dimensionless)",
+        note = "Estimated from M. gigas analogy; no species-specific data available."
+      ),
+
       slope = list(
         rank = 6,
         type = "threshold_decay",
         optimal_max = 5, acceptable_max = 15, poor_max = 30,
         unit = "degrees"
+      ),
+
+      dissolved_oxygen = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 5.0, optimal_max = 10.0,
+        poor_min    = 2.5, acceptable_min = 3.5,
+        acceptable_max = 14.0, absolute_max = 20.0,
+        unit = "mg/L",
+        note = "Estuarine Chinese coastal species; tolerates moderate hypoxia. Estimated from Wan et al. (2012) literature."
       )
     ),
 
@@ -2014,11 +2326,39 @@
         unit = "rugosity_index"
       ),
 
+      ph = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 7.8,  optimal_max = 8.3,
+        poor_min    = 7.5,  acceptable_max = 8.5, absolute_max = 8.6,
+        unit = "pH units",
+        note = "Estimated from M. gigas analogy; no species-specific pH tolerance data available. Optimal 7.8-8.3."
+      ),
+
+      omega_aragonite = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 1.6,  optimal_max = 3.5,
+        poor_min    = 0.8,  acceptable_max = 4.5, absolute_max = 5.5,
+        unit = "Omega (dimensionless)",
+        note = "Estimated from M. gigas analogy; no species-specific data available."
+      ),
+
       slope = list(
         rank = 6,
         type = "threshold_decay",
         optimal_max = 5,  acceptable_max = 15, poor_max = 30,
         unit = "degrees"
+      ),
+
+      dissolved_oxygen = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 5.0, optimal_max = 9.0,
+        poor_min    = 2.5, acceptable_min = 4.0,
+        acceptable_max = 12.0, absolute_max = 18.0,
+        unit = "mg/L",
+        note = "Subtropical coastal species; Pearl River estuary conditions often hypoxic. Optimal 5-9 mg/L. Source: Zhang et al. (2014)."
       )
     ),
 
@@ -2215,12 +2555,40 @@
         note = "Rocky reef habitat; higher rugosity than flat-bottom species. Complex relief provides substrate for attachment."
       ),
 
+      ph = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 7.85, optimal_max = 8.3,
+        poor_min    = 7.6,  acceptable_max = 8.5, absolute_max = 8.6,
+        unit = "pH units",
+        note = "Japanese coastal waters pH 7.9-8.3 typical; subtidal rocky reef sites generally well-buffered. Estimated from C. gigas analogy with slight upward adjustment for cleaner coastal habitat. Source: estimated."
+      ),
+
+      omega_aragonite = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 1.8,  optimal_max = 3.5,
+        poor_min    = 1.0,  acceptable_max = 4.5, absolute_max = 5.5,
+        unit = "Omega (dimensionless)",
+        note = "Japanese coastal waters well-buffered; rocky reef habitat limits exposure to low Omega. Estimated from C. gigas analogy with slight upward adjustment. Source: estimated."
+      ),
+
       slope = list(
         rank = 6,
         type = "threshold_decay",
         optimal_max = 20, acceptable_max = 35, poor_max = 60,
         unit = "degrees",
         note = "Rocky reef species tolerates steep substrates; highest slope tolerance of supported species."
+      ),
+
+      dissolved_oxygen = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 6.0, optimal_max = 10.0,
+        poor_min    = 3.0, acceptable_min = 5.0,
+        acceptable_max = 14.0, absolute_max = 20.0,
+        unit = "mg/L",
+        note = "Deep subtidal rocky reef species; well-oxygenated waters preferred. Optimal 6-10 mg/L. Estimated by analogy."
       )
     ),
 
@@ -2379,11 +2747,39 @@
         note = "Tropical estuarine habitats naturally turbid; estimated high turbidity tolerance."
       ),
 
+      ph = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 7.8,  optimal_max = 8.3,
+        poor_min    = 7.5,  acceptable_max = 8.5, absolute_max = 8.6,
+        unit = "pH units",
+        note = "Estimated from M. gigas analogy; no species-specific pH tolerance data available. Optimal 7.8-8.3."
+      ),
+
+      omega_aragonite = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 1.6,  optimal_max = 3.5,
+        poor_min    = 0.8,  acceptable_max = 4.5, absolute_max = 5.5,
+        unit = "Omega (dimensionless)",
+        note = "Estimated from M. gigas analogy; no species-specific data available."
+      ),
+
       slope = list(
         rank = 6,
         type = "threshold_decay",
         optimal_max = 5, acceptable_max = 15, poor_max = 30,
         unit = "degrees"
+      ),
+
+      dissolved_oxygen = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 4.5, optimal_max = 9.0,
+        poor_min    = 2.0, acceptable_min = 3.5,
+        acceptable_max = 12.0, absolute_max = 18.0,
+        unit = "mg/L",
+        note = "Tropical SE Asian estuary species; low-DO tolerance common in monsoon-influenced habitats. Estimated."
       )
     ),
 
@@ -2537,11 +2933,39 @@
         unit = "rugosity_index"
       ),
 
+      ph = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 7.85, optimal_max = 8.3,
+        poor_min    = 7.6,  acceptable_max = 8.5, absolute_max = 8.6,
+        unit = "pH units",
+        note = "Foveaux Strait and Chilean coastal waters well-buffered; pH 7.9-8.3 typical. Cold-water upwelling may cause episodic low pH. Source: estimated from O. edulis analogy."
+      ),
+
+      omega_aragonite = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 1.8,  optimal_max = 3.5,
+        poor_min    = 1.0,  acceptable_max = 4.5, absolute_max = 5.5,
+        unit = "Omega (dimensionless)",
+        note = "Subantarctic waters naturally lower Omega than tropical seas; O. chilensis adapted to moderate undersaturation. Cold-water upwelling at Foveaux Strait may drive Omega < 1.5 episodically. Source: estimated."
+      ),
+
       slope = list(
         rank = 6,
         type = "threshold_decay",
         optimal_max = 8,  acceptable_max = 20, poor_max = 35,
         unit = "degrees"
+      ),
+
+      dissolved_oxygen = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 6.0, optimal_max = 11.0,
+        poor_min    = 4.5, acceptable_min = 5.5,
+        acceptable_max = 14.0, absolute_max = 20.0,
+        unit = "mg/L",
+        note = "Cold southern hemisphere waters; higher DO saturation expected. Optimal 6-11 mg/L. Source: Avendano & Le Pennec (1997)."
       )
     ),
 
@@ -2687,11 +3111,39 @@
         unit = "rugosity_index"
       ),
 
+      ph = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 7.85, optimal_max = 8.3,
+        poor_min    = 7.6,  acceptable_max = 8.5, absolute_max = 8.6,
+        unit = "pH units",
+        note = "Korean coastal waters generally pH 7.9-8.2; subtidal populations in Tongyeong and Geoje-si not typically exposed to severe acidification. Source: estimated from C. gigas analogy."
+      ),
+
+      omega_aragonite = list(
+        rank = 4,
+        type = "optimal_range",
+        optimal_min = 1.7,  optimal_max = 3.5,
+        poor_min    = 1.0,  acceptable_max = 4.5, absolute_max = 5.5,
+        unit = "Omega (dimensionless)",
+        note = "Korean coastal subtidal waters generally Omega 2.0-3.5. Estimated from flat oyster analogy. Source: estimated."
+      ),
+
       slope = list(
         rank = 6,
         type = "threshold_decay",
         optimal_max = 6,  acceptable_max = 15, poor_max = 30,
         unit = "degrees"
+      ),
+
+      dissolved_oxygen = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 5.5, optimal_max = 10.0,
+        poor_min    = 3.0, acceptable_min = 4.5,
+        acceptable_max = 14.0, absolute_max = 20.0,
+        unit = "mg/L",
+        note = "East Asian coastal flat oyster; tolerates variable DO in semi-enclosed bays. Estimated by analogy."
       )
     ),
 
@@ -2782,7 +3234,27 @@
         min_for_food = 0.05, optimal_min = 0.10, optimal_max = 0.40,
         tidal_max = 0.80, hard_max = 1.50, unit = "m/s"),
       fishing_intensity = list(rank = 2, type = "binary_penalty",
-        trawl_depth_max = 5, penalty = 0.55, unit = "logical")
+        trawl_depth_max = 5, penalty = 0.55, unit = "logical"),
+      ph = list(rank = 4, type = "optimal_range",
+        optimal_min = 7.8, optimal_max = 8.3,
+        poor_min = 7.5, acceptable_max = 8.5, absolute_max = 8.6,
+        unit = "pH units",
+        note = "Tropical intertidal species; estimated from M. gigas analogy."),
+      omega_aragonite = list(rank = 4, type = "optimal_range",
+        optimal_min = 1.6, optimal_max = 3.5,
+        poor_min = 0.8, acceptable_max = 4.5, absolute_max = 5.5,
+        unit = "Omega (dimensionless)",
+        note = "Estimated from M. gigas analogy; no species-specific data available."),
+
+      dissolved_oxygen = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 4.5, optimal_max = 9.0,
+        poor_min    = 2.0, acceptable_min = 3.5,
+        acceptable_max = 12.0, absolute_max = 18.0,
+        unit = "mg/L",
+        note = "Tropical intertidal species; tolerates emersion and variable DO. Estimated."
+      )
     ),
 
     seasonal_overrides = list()
@@ -2841,7 +3313,37 @@
       shear_stress = list(rank = 3, type = "threshold_decay",
         optimal_max = 0.4, hard_max = 0.9, unit = "N/m^2"),
       fishing_intensity = list(rank = 2, type = "binary_penalty",
-        trawl_depth_max = 30, penalty = 0.65, unit = "logical")
+        trawl_depth_max = 30, penalty = 0.65, unit = "logical"),
+      ph = list(rank = 4, type = "optimal_range",
+        optimal_min = 7.85, optimal_max = 8.3,
+        poor_min = 7.6, acceptable_max = 8.5, absolute_max = 8.6,
+        unit = "pH units",
+        note = "Southern Australian coastal waters well-buffered; pH 7.9-8.2 typical. Estimated from O. edulis analogy."),
+      omega_aragonite = list(rank = 4, type = "optimal_range",
+        optimal_min = 1.8, optimal_max = 3.5,
+        poor_min = 1.0, acceptable_max = 4.5, absolute_max = 5.5,
+        unit = "Omega (dimensionless)",
+        note = "Southern Australian shelf waters typically Omega 2.0-3.5. Estimated from O. edulis analogy."),
+
+      salinity = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 28.0, optimal_max = 36.0,
+        poor_min    = 18.0, acceptable_min = 24.0,
+        acceptable_max = 38.0, absolute_max = 38.0,
+        unit = "PSU",
+        note = "Stenohaline southern Australian species; optimal 28-36 PSU. Source: Gribben & Creese (2003)."
+      ),
+
+      dissolved_oxygen = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 6.0, optimal_max = 10.0,
+        poor_min    = 3.5, acceptable_min = 5.0,
+        acceptable_max = 14.0, absolute_max = 20.0,
+        unit = "mg/L",
+        note = "Southern Australian subtidal flat oyster; cool well-oxygenated waters. Optimal 6-10 mg/L. Estimated."
+      )
     ),
 
     seasonal_overrides = list(
@@ -2917,7 +3419,27 @@
         optimal_min = 0.20, optimal_max = 1.00,
         poor_min = 0.00, poor_max = 0.10, unit = "hardness_index (0-1)"),
       fishing_intensity = list(rank = 3, type = "binary_penalty",
-        trawl_depth_max = 10, penalty = 0.50, unit = "logical")
+        trawl_depth_max = 10, penalty = 0.50, unit = "logical"),
+      ph = list(rank = 4, type = "optimal_range",
+        optimal_min = 7.7, optimal_max = 8.2,
+        poor_min = 7.4, acceptable_max = 8.5, absolute_max = 8.6,
+        unit = "pH units",
+        note = "Brackish/estuarine SE Asian species; broader pH tolerance expected from euryhaline habitat. Estimated."),
+      omega_aragonite = list(rank = 4, type = "optimal_range",
+        optimal_min = 1.4, optimal_max = 3.5,
+        poor_min = 0.7, acceptable_max = 4.5, absolute_max = 5.5,
+        unit = "Omega (dimensionless)",
+        note = "Estuarine/brackish habitat; river dilution lowers alkalinity and Omega. More tolerant of low Omega than marine species. Estimated."),
+
+      dissolved_oxygen = list(
+        rank = 5,
+        type = "optimal_range",
+        optimal_min = 4.0, optimal_max = 8.0,
+        poor_min    = 2.5, acceptable_min = 3.0,
+        acceptable_max = 12.0, absolute_max = 18.0,
+        unit = "mg/L",
+        note = "Brackish water species; low-DO tolerance higher than marine oysters. Estimated from SE Asian literature."
+      )
     ),
 
     seasonal_overrides = list()

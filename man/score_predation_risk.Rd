@@ -69,15 +69,14 @@ each record is treated as presence-only (density = 1)
 }
 
 \examples{
-\donttest{
-# Manual data
-pred <- data.frame(lat=51.5, lon=-4.1, species="Asterias rubens", density=3)
-result <- score_predation_risk(result, predator_data=pred, species="ostrea_edulis")
+sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
 
-# Live EMODnet fetch
-result <- score_predation_risk(result, fetch_live=TRUE)
-
-# Depth-proxy only (no predator data)
+# Depth-proxy only (no external data needed)
 result <- score_predation_risk(result)
-}
+table(result$predation_risk_class)
+
+# With manual predator observations
+pred <- data.frame(lat=50.25, lon=-4.12, species="Asterias rubens", density=3)
+result <- score_predation_risk(result, predator_data=pred, species="ostrea_edulis")
 }

@@ -61,23 +61,13 @@ with one result dataframe per scenario, plus a comparison summary and a
 \code{suitability_delta} column (projected minus baseline) for each.
 }
 \examples{
-\donttest{
-result <- predict_oyster(survey, "ostrea_edulis")
+sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
 tol    <- get_species_tolerances("ostrea_edulis")
-
-# Project under all three UKCP18-aligned scenarios
-proj <- project_suitability(result, tol)
-
-# Mean suitability change by scenario
+proj   <- project_suitability(result, tol)
 proj$summary
-
-# High-risk cells: currently High but drops to Low under RCP8.5
+# Cells currently High that become Low under RCP8.5
 vulnerable <- subset(proj$rcp85,
   result$suitability_class == "High" & suitability_class == "Low")
-
-# Custom scenario (e.g. local downscaled projection)
-proj2 <- project_suitability(result, tol, scenarios = NULL,
-  custom_deltas = list(
-    ukcp18_p95 = c(temperature = 3.2, salinity = -0.8)))
-}
+nrow(vulnerable)
 }

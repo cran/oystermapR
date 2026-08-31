@@ -42,20 +42,10 @@
 #'
 #' @export
 #' @examples
-#' \dontrun{
-#' result <- predict_oyster(survey, "ostrea_edulis")
+#' sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+#' result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
 #' result <- analyse_connectivity(result, gap_m = 500)
-#'
-#' # Large well-connected patches are the best restoration targets
-#' good_patches <- subset(result,
-#'   connectivity_class == "large" & suitability_class == "High")
-#'
-#' # Count patches
 #' table(result$connectivity_class)
-#'
-#' # Visualise -- patch_id maps to distinct colours in QGIS
-#' export_geotiff(result, "connectivity.tif")
-#' }
 analyse_connectivity <- function(result,
                                   min_suitability = 0.5,
                                   gap_m           = 500,
@@ -199,7 +189,9 @@ analyse_connectivity <- function(result,
     n_iso <- sum(result$connectivity_class == "isolated", na.rm = TRUE)
     if (n_iso > 0)
       cli::cli_inform(c(
-        "i" = paste0(n_iso, " isolated cell{?s} \u2014 suitable but unconnected. ",
+        "i" = paste0(n_iso, " isolated ",
+                     if (n_iso == 1L) "cell" else "cells",
+                     " \u2014 suitable but unconnected. ",
                      "Restoration value is limited without connectivity to source populations.")
       ))
   }

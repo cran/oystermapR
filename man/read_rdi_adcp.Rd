@@ -65,7 +65,7 @@ do not require \code{oce}.
 handled automatically. For moored deployments supply \code{lat} and \code{lon}.
 }
 \examples{
-\donttest{
+\dontrun{
 # Vessel-mounted WorkHorse II (GPS embedded in binary)
 adcp <- read_rdi_adcp("survey_2024.000")
 

@@ -63,16 +63,16 @@ sufficient. For multi-day surveys or those spanning a full tidal cycle,
 supply per-row heights matched to the survey timestamp.
 }
 \examples{
-\donttest{
-# Survey conducted around high water at Oban -- tidal height ~3.1 m above CD
-survey_corrected <- correct_to_chart_datum(survey, tidal_height_m = 3.1)
-
-# Per-row heights from a tide gauge CSV matched to survey timestamps
-tide_series <- read.csv("oban_tide_gauge.csv")
-# (match to survey rows by timestamp -- user responsibility)
-survey_corrected <- correct_to_chart_datum(
-  survey,
-  tidal_height_m = tide_series$height_m
+# Minimal survey dataframe with depths measured below the water surface
+df <- data.frame(
+  lat   = c(56.41, 56.42, 56.43),
+  lon   = c(-5.47, -5.47, -5.46),
+  depth = c(5.5, 12.0, 8.3)
 )
-}
+# Survey conducted near high water at Oban; tidal height ~3.1 m above CD
+df_corrected <- correct_to_chart_datum(df, tidal_height_m = 3.1)
+df_corrected[, c("depth", "depth_raw_m")]
+
+# Per-row heights (e.g. from a matched tide gauge series)
+df_corrected2 <- correct_to_chart_datum(df, tidal_height_m = c(3.1, 3.0, 2.9))
 }

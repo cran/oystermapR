@@ -119,34 +119,10 @@ PLD values are literature-derived:\tabular{llll}{
 }
 
 \examples{
-\donttest{
-result <- predict_oyster(survey, "ostrea_edulis")
-
-# Route 1 only -- built-in dispersal kernel
+sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
 result <- score_larval_connectivity(result, species = "ostrea_edulis")
-
-# Route 1 with custom dispersal distance (e.g. strong tidal excursion)
-result <- score_larval_connectivity(result, species = "ostrea_edulis",
-                                    tidal_excursion_km = 10)
-
-# Route 1 with manual dispersal override
-result <- score_larval_connectivity(result, dispersal_km = 8)
-
-# Route 2 -- external connectivity matrix from OpenDrift
-cm <- read.csv("opendrift_connectivity.csv")
-# Required columns: source_lat, source_lon, dest_lat, dest_lon, weight
-result <- score_larval_connectivity(result,
-           species             = "ostrea_edulis",
-           connectivity_matrix = cm)
-
-# Inspect isolated patches -- need artificial seeding
-isolated <- subset(result,
-  larval_connectivity_class == "Isolated" & suitability_class == "High")
-
-# Strong candidates: high suitability AND high connectivity
-targets <- subset(result,
-  suitability_class == "High" & larval_connectivity_class == "Highly connected")
-}
+table(result$larval_connectivity_class)
 }
 \references{
 Cowen R.K. & Sponaugle S. (2009) Annual Review of Marine Science 1:443--466.

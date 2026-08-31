@@ -7,11 +7,15 @@
 #' The result looks like a fluid heat surface over your survey area rather than
 #' isolated point squares.
 #'
-#' The output GeoTIFF contains three bands:
+#' The output GeoTIFF contains five bands:
 #' 1. **suitability** -- IDW-interpolated score \[0, 1\]. Use this for the heatmap.
 #' 2. **excluded_mask** -- 1 where a survey point was hard-excluded, 0 otherwise.
 #' 3. **n_observations** -- how many survey points fell within each raster cell
 #'    (data density diagnostic).
+#' 4. **dist_to_nearest_m** -- distance in metres from each cell centre to the
+#'    nearest survey point (use as a QGIS transparency mask to fade extrapolated areas).
+#' 5. **n_layers_scored** -- number of environmental variables that contributed to
+#'    the suitability score at each survey point (data completeness overlay).
 #'
 #' @param df A dataframe processed by [predict_oyster()], containing columns
 #'   `lat`, `lon`, `suitability`, `excluded`.
@@ -45,18 +49,11 @@
 #'
 #' @export
 #' @examples
-#' \donttest{
-#' result <- predict_oyster("survey.csv", "ostrea_edulis")
-#'
-#' # Standard export -- smooth heatmap with auto radius and contours
-#' export_geotiff(result, "oyster_heatmap.tif")
-#'
-#' # Finer resolution for a small harbour survey
-#' export_geotiff(result, "oyster_heatmap.tif", resolution = 0.0001)
-#'
-#' # Override IDW radius explicitly (e.g. sparse transect data)
-#' export_geotiff(result, "oyster_heatmap.tif", idw_max_dist = 0.005)
-#' }
+#' sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+#' result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
+#' out_tif <- file.path(tempdir(), "oyster_heatmap.tif")
+#' export_geotiff(result, out_tif)
+#' file.exists(out_tif)
 export_geotiff <- function(df,
                            path,
                            resolution   = 0.0002,
@@ -162,8 +159,25 @@ export_geotiff <- function(df,
   terra::values(dist_rast) <- dist_vals
   names(dist_rast) <- "dist_to_nearest_m"
 
+  # ---- Band 5: Data layers used (n_layers_scored per point) ------------------
+  # Shows how many environmental variables contributed to the score at each
+  # survey point. Low values flag data-sparse locations. Load in QGIS alongside
+  # the suitability surface to identify areas where the score rests on few inputs.
+  if ("n_layers_scored" %in% names(df)) {
+    df$n_layers_int <- as.integer(df$n_layers_scored)
+    pts_lyr  <- terra::vect(df, geom = c("lon", "lat"), crs = crs)
+    lyr_rast <- terra::rasterize(pts_lyr, r_template,
+                                 field = "n_layers_int",
+                                 fun   = min, na.rm = TRUE)  # min = most data-sparse cell
+    names(lyr_rast) <- "n_layers_scored"
+  } else {
+    lyr_rast <- r_template
+    terra::values(lyr_rast) <- NA_real_
+    names(lyr_rast) <- "n_layers_scored"
+  }
+
   # ---- Stack and write --------------------------------------------------------
-  stack <- c(suit_rast, excl_rast, cnt_rast, dist_rast)
+  stack <- c(suit_rast, excl_rast, cnt_rast, dist_rast, lyr_rast)
 
   terra::writeRaster(stack,
                      filename  = path,
@@ -327,10 +341,11 @@ export_geotiff <- function(df,
 #' @return The `.gpkg` file path (invisibly).
 #' @export
 #' @examples
-#' \donttest{
-#' export_geotiff(result, "oyster_heatmap.tif")
-#' export_contours("oyster_heatmap.tif")
-#' }
+#' sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+#' result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
+#' out_tif <- file.path(tempdir(), "oyster_heatmap.tif")
+#' export_geotiff(result, out_tif)
+#' export_contours(out_tif)
 export_contours <- function(tif_path,
                             interval  = 0.1,
                             gpkg_path = NULL) {

@@ -42,7 +42,8 @@ knitr::opts_chunk$set(
 #   verbose     = TRUE
 # )
 # 
-# head(ctd[, c("lat", "lon", "temperature", "salinity", "chlorophyll_a")])
+# head(ctd[, c("lat", "lon", "temperature", "salinity", "chlorophyll_a",
+#              "ph", "alkalinity")])
 
 ## ----merge--------------------------------------------------------------------
 # survey <- merge_sensor_data(adcp = adcp, bathy = bathy, ctd = ctd)
@@ -87,6 +88,11 @@ knitr::opts_chunk$set(
 #   max(result$suitability,  na.rm = TRUE)
 # ))
 
+## ----layers-scored------------------------------------------------------------
+# # Points with fewer scored variables may have less reliable scores
+# summary(result$n_layers_scored)
+# table(result$n_layers_scored)
+
 ## ----risk, warning = FALSE----------------------------------------------------
 # # Wave exposure: uses current_velocity and depth as proxies for fetch exposure
 # result <- score_wave_exposure(result, verbose = FALSE)
@@ -98,7 +104,7 @@ knitr::opts_chunk$set(
 # cat("HAB risk range:     ", round(range(result$hab_risk,      na.rm=TRUE), 3), "\n")
 
 ## ----export, eval = FALSE-----------------------------------------------------
-# # Write GeoTIFF and companion QGIS style file
+# # Write five-band GeoTIFF and companion QGIS style file
 # export_geotiff(
 #   df         = result,
 #   path       = "example_bay_suitability.tif",
@@ -112,6 +118,84 @@ knitr::opts_chunk$set(
 # # Mean component score per variable (higher = more suitable)
 # col_means <- sort(colMeans(result[score_cols], na.rm = TRUE))
 # print(round(col_means, 3))
+
+## ----aragonite-check----------------------------------------------------------
+# # Verify aragonite was auto-calculated and scored
+# "omega_aragonite"  %in% names(result)      # column present
+# "score_ph"         %in% names(result)      # pH scored
+# "score_omega_aragonite" %in% names(result) # aragonite scored
+# 
+# # Distribution of omega_aragonite across Example Bay
+# summary(result$omega_aragonite)
+
+## ----aragonite-manual, eval = FALSE-------------------------------------------
+# # Manual calculation: sensors gave pH only, alkalinity approximated
+# df$alkalinity <- 2300   # µmol/kg — representative NE Atlantic value
+# df$omega_aragonite <- calculate_aragonite(
+#   pH          = df$ph,
+#   alkalinity  = df$alkalinity,
+#   temperature = df$temperature,
+#   salinity    = df$salinity
+# )
+
+## ----variable-impact----------------------------------------------------------
+# impact <- variable_impact(result, "ostrea_edulis")
+# print(impact)
+
+## ----variable-impact-explore--------------------------------------------------
+# # Variables scoring below 0.5 are potential site limiters
+# impact[impact$mean_score < 0.5, c("variable", "norm_weight_pct", "mean_score")]
+# 
+# # Variables with sparse data coverage
+# impact[impact$pct_coverage < 80, c("variable", "pct_coverage")]
+
+## ----area-summary-------------------------------------------------------------
+# # Auto-estimate cell size from median nearest-neighbour spacing
+# s <- area_summary(result, verbose = TRUE)
+
+## ----area-summary-explore-----------------------------------------------------
+# # Per-class breakdown
+# s$class_summary[, c("class", "area_m2", "area_ha", "pct_total_area",
+#                     "mean_suitability")]
+# 
+# # Totals
+# s$total[c("surveyed_area_m2", "suitable_area_m2", "pct_suitable", "cell_size_m")]
+# 
+# # Contiguous patches of High + Moderate suitability
+# head(s$patches)
+# 
+# # Patches meeting the OSPAR 100 m² viable area threshold
+# viable <- s$patches[s$patches$viable, ]
+# cat(nrow(viable), "viable patches; largest:", round(max(viable$area_m2)), "m²\n")
+
+## ----area-summary-known, eval = FALSE-----------------------------------------
+# # 5 m ROV grid survey
+# s5m <- area_summary(result, cell_size_m = 5, viable_area_m2 = 100)
+# 
+# # 25 m ADCP trackline survey, larger minimum viable unit for production scale
+# s25m <- area_summary(result, cell_size_m = 25, viable_area_m2 = 500)
+
+## ----plot-tolerance-temp, fig.height = 5--------------------------------------
+# # Temperature scoring curve with zone shading
+# plot_tolerance("ostrea_edulis", "temperature")
+
+## ----plot-tolerance-seasons, fig.height = 5-----------------------------------
+# # All four seasons overlaid on a single plot
+# plot_tolerance("ostrea_edulis", "temperature", season = "all")
+
+## ----plot-tolerance-oa, fig.height = 5----------------------------------------
+# # Ocean acidification variables
+# plot_tolerance("ostrea_edulis", "ph")
+# plot_tolerance("ostrea_edulis", "omega_aragonite")
+
+## ----plot-tolerance-do, fig.height = 5----------------------------------------
+# # Dissolved oxygen: compare tolerance between species
+# plot_tolerance("ostrea_edulis",        "dissolved_oxygen")
+# plot_tolerance("crassostrea_iredalei", "dissolved_oxygen")
+
+## ----plot-tolerance-save, eval = FALSE----------------------------------------
+# p <- plot_tolerance("ostrea_edulis", "salinity")
+# ggplot2::ggsave("salinity_tolerance_O_edulis.png", p, width = 8, height = 5)
 
 ## ----session-info-------------------------------------------------------------
 # sessionInfo()

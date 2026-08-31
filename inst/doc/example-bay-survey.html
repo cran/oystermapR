@@ -351,16 +351,21 @@ is covered:</p>
 <li>Loading acoustic Doppler (ADCP) current data</li>
 <li>Loading bathymetric soundings</li>
 <li>Loading CTD water-quality data (temperature, salinity,
-chlorophyll_a)</li>
+chlorophyll_a, pH, alkalinity)</li>
 <li>Merging all sensor datasets onto a common grid</li>
 <li>Running quality control</li>
 <li>Predicting suitability for <em>Ostrea edulis</em> (European Flat
 Oyster)</li>
 <li>Scoring wave exposure and HAB risk</li>
-<li>Exporting a GeoTIFF for QGIS</li>
+<li>Exporting a five-band GeoTIFF for QGIS</li>
+<li>pH and aragonite saturation scoring</li>
+<li>Variable impact diagnostic</li>
+<li>Fine-scale habitat area analysis</li>
+<li>Tolerance curve visualisation</li>
 </ol>
-<p>The example data files (<code>example_bay_adcp.csv</code> and
-<code>example_bay_soundings.xyz</code>) are included in the package and
+<p>The example data files (<code>example_bay_adcp.csv</code>,
+<code>example_bay_soundings.xyz</code>, and
+<code>example_bay_ctd.csv</code>) are included in the package and
 represent a simulated mid-summer survey.</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" tabindex="-1"></a><span class="fu">library</span>(oystermapR)</span></code></pre></div>
 <hr />
@@ -427,21 +432,23 @@ index (1.0 = flat; higher = more complex substrate).</p>
 <p>The ADCP and echosounder provide hydrodynamic and bathymetric
 variables, but <code>predict_oyster()</code> can also use water-quality
 data when available. The Example Bay survey included a 5 × 4 grid of CTD
-casts recording temperature, salinity, and chlorophyll_a, stored as a
+casts recording temperature, salinity, chlorophyll_a,
+<strong>pH</strong>, and <strong>total alkalinity</strong>, stored as a
 plain CSV.</p>
 <p><code>read_generic_csv()</code> handles any tabular sensor export
 with flexible column matching. Column names are recognised automatically
 when they follow standard conventions
 (<code>lat</code>/<code>lon</code>, <code>temperature</code>,
-<code>salinity</code>, <code>chlorophyll_a</code>). For instruments that
-export non-standard headers, supply an explicit
-<code>col_map</code>:</p>
+<code>salinity</code>, <code>chlorophyll_a</code>, <code>ph</code>,
+<code>alkalinity</code>). For instruments that export non-standard
+headers, supply an explicit <code>col_map</code>:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" tabindex="-1"></a><span class="co"># Example with non-standard headers from a YSI EXO sonde export:</span></span>
 <span id="cb4-2"><a href="#cb4-2" tabindex="-1"></a>ctd <span class="ot">&lt;-</span> <span class="fu">read_generic_csv</span>(</span>
 <span id="cb4-3"><a href="#cb4-3" tabindex="-1"></a>  <span class="st">&quot;ysi_export.csv&quot;</span>,</span>
 <span id="cb4-4"><a href="#cb4-4" tabindex="-1"></a>  <span class="at">col_map =</span> <span class="fu">c</span>(<span class="at">lat =</span> <span class="st">&quot;GPS_Lat&quot;</span>, <span class="at">lon =</span> <span class="st">&quot;GPS_Lon&quot;</span>,</span>
-<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>              <span class="at">temperature =</span> <span class="st">&quot;Temp_C&quot;</span>, <span class="at">salinity =</span> <span class="st">&quot;Sal_PSU&quot;</span>)</span>
-<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>)</span></code></pre></div>
+<span id="cb4-5"><a href="#cb4-5" tabindex="-1"></a>              <span class="at">temperature =</span> <span class="st">&quot;Temp_C&quot;</span>, <span class="at">salinity =</span> <span class="st">&quot;Sal_PSU&quot;</span>,</span>
+<span id="cb4-6"><a href="#cb4-6" tabindex="-1"></a>              <span class="at">ph =</span> <span class="st">&quot;pH_total&quot;</span>, <span class="at">alkalinity =</span> <span class="st">&quot;TA_umolkg&quot;</span>)</span>
+<span id="cb4-7"><a href="#cb4-7" tabindex="-1"></a>)</span></code></pre></div>
 <p>For Example Bay the column names match the oystermapR conventions
 directly:</p>
 <div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" tabindex="-1"></a>ctd_file <span class="ot">&lt;-</span> <span class="fu">system.file</span>(<span class="st">&quot;extdata&quot;</span>, <span class="st">&quot;example_bay_ctd.csv&quot;</span>, <span class="at">package =</span> <span class="st">&quot;oystermapR&quot;</span>)</span>
@@ -452,10 +459,12 @@ directly:</p>
 <span id="cb5-6"><a href="#cb5-6" tabindex="-1"></a>  <span class="at">verbose     =</span> <span class="cn">TRUE</span></span>
 <span id="cb5-7"><a href="#cb5-7" tabindex="-1"></a>)</span>
 <span id="cb5-8"><a href="#cb5-8" tabindex="-1"></a></span>
-<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="fu">head</span>(ctd[, <span class="fu">c</span>(<span class="st">&quot;lat&quot;</span>, <span class="st">&quot;lon&quot;</span>, <span class="st">&quot;temperature&quot;</span>, <span class="st">&quot;salinity&quot;</span>, <span class="st">&quot;chlorophyll_a&quot;</span>)])</span></code></pre></div>
+<span id="cb5-9"><a href="#cb5-9" tabindex="-1"></a><span class="fu">head</span>(ctd[, <span class="fu">c</span>(<span class="st">&quot;lat&quot;</span>, <span class="st">&quot;lon&quot;</span>, <span class="st">&quot;temperature&quot;</span>, <span class="st">&quot;salinity&quot;</span>, <span class="st">&quot;chlorophyll_a&quot;</span>,</span>
+<span id="cb5-10"><a href="#cb5-10" tabindex="-1"></a>             <span class="st">&quot;ph&quot;</span>, <span class="st">&quot;alkalinity&quot;</span>)])</span></code></pre></div>
 <p>Spatially averaging at <code>spatial_res = 2</code> collapses the
-four replicate casts per station to a single value per ~1 km grid
-cell.</p>
+four replicate casts per station to a single value per ~1 km grid cell.
+The <code>ph</code> and <code>alkalinity</code> columns will be used in
+Step 9 for aragonite saturation scoring.</p>
 <hr />
 </div>
 <div id="step-4-merge-all-sensor-datasets" class="section level2">
@@ -535,9 +544,15 @@ Excluded.</p>
 <span id="cb10-6"><a href="#cb10-6" tabindex="-1"></a>  <span class="fu">max</span>(result<span class="sc">$</span>suitability,  <span class="at">na.rm =</span> <span class="cn">TRUE</span>)</span>
 <span id="cb10-7"><a href="#cb10-7" tabindex="-1"></a>))</span></code></pre></div>
 <p>The result dataframe retains all input columns plus
-<code>suitability</code>, <code>suitability_class</code>, and
-per-variable component scores (<code>score_depth</code>,
-<code>score_current_velocity</code>, etc.).</p>
+<code>suitability</code>, <code>suitability_class</code>,
+<code>data_completeness</code> (fraction of variables scored),
+<code>n_layers_scored</code> (integer count of variables contributing at
+each point), and per-variable component scores
+(<code>score_depth</code>, <code>score_current_velocity</code>,
+<code>score_ph</code>, <code>score_omega_aragonite</code>, etc.).</p>
+<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="co"># Points with fewer scored variables may have less reliable scores</span></span>
+<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a><span class="fu">summary</span>(result<span class="sc">$</span>n_layers_scored)</span>
+<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a><span class="fu">table</span>(result<span class="sc">$</span>n_layers_scored)</span></code></pre></div>
 <hr />
 </div>
 <div id="step-7-risk-and-disturbance-scoring" class="section level2">
@@ -545,36 +560,81 @@ per-variable component scores (<code>score_depth</code>,
 <p>oystermapR includes optional risk modules that can be appended to the
 result. Here we add wave exposure (derived from the current speed data
 and fetch geometry) and a simple HAB risk score.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" tabindex="-1"></a><span class="co"># Wave exposure: uses current_velocity and depth as proxies for fetch exposure</span></span>
-<span id="cb11-2"><a href="#cb11-2" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">score_wave_exposure</span>(result, <span class="at">verbose =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb11-3"><a href="#cb11-3" tabindex="-1"></a></span>
-<span id="cb11-4"><a href="#cb11-4" tabindex="-1"></a><span class="co"># HAB risk: without live ICES data, scores from chlorophyll_a alone</span></span>
-<span id="cb11-5"><a href="#cb11-5" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">score_hab_risk</span>(result, <span class="at">verbose =</span> <span class="cn">FALSE</span>)</span>
-<span id="cb11-6"><a href="#cb11-6" tabindex="-1"></a></span>
-<span id="cb11-7"><a href="#cb11-7" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Wave exposure range:&quot;</span>, <span class="fu">round</span>(<span class="fu">range</span>(result<span class="sc">$</span>wave_exposure, <span class="at">na.rm=</span><span class="cn">TRUE</span>), <span class="dv">3</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
-<span id="cb11-8"><a href="#cb11-8" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;HAB risk range:     &quot;</span>, <span class="fu">round</span>(<span class="fu">range</span>(result<span class="sc">$</span>hab_risk,      <span class="at">na.rm=</span><span class="cn">TRUE</span>), <span class="dv">3</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="co"># Wave exposure: uses current_velocity and depth as proxies for fetch exposure</span></span>
+<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">score_wave_exposure</span>(result, <span class="at">verbose =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a></span>
+<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a><span class="co"># HAB risk: without live ICES data, scores from chlorophyll_a alone</span></span>
+<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">score_hab_risk</span>(result, <span class="at">verbose =</span> <span class="cn">FALSE</span>)</span>
+<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a></span>
+<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;Wave exposure range:&quot;</span>, <span class="fu">round</span>(<span class="fu">range</span>(result<span class="sc">$</span>wave_exposure, <span class="at">na.rm=</span><span class="cn">TRUE</span>), <span class="dv">3</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span>
+<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a><span class="fu">cat</span>(<span class="st">&quot;HAB risk range:     &quot;</span>, <span class="fu">round</span>(<span class="fu">range</span>(result<span class="sc">$</span>hab_risk,      <span class="at">na.rm=</span><span class="cn">TRUE</span>), <span class="dv">3</span>), <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span></code></pre></div>
 <hr />
 </div>
 <div id="step-8-export-geotiff-for-qgis" class="section level2">
 <h2>Step 8: Export GeoTIFF for QGIS</h2>
 <p><code>export_geotiff()</code> interpolates the suitability scores
-onto a regular raster and writes a GeoTIFF.
+onto a regular raster and writes a five-band GeoTIFF.
 <code>export_qml_style()</code> writes a matching QGIS colour-ramp style
 file (<code>.qml</code>) so the layer renders immediately with the
 standard oystermapR colour scheme (red = excluded, green = high
 suitability).</p>
-<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" tabindex="-1"></a><span class="co"># Write GeoTIFF and companion QGIS style file</span></span>
-<span id="cb12-2"><a href="#cb12-2" tabindex="-1"></a><span class="fu">export_geotiff</span>(</span>
-<span id="cb12-3"><a href="#cb12-3" tabindex="-1"></a>  <span class="at">df         =</span> result,</span>
-<span id="cb12-4"><a href="#cb12-4" tabindex="-1"></a>  <span class="at">path       =</span> <span class="st">&quot;example_bay_suitability.tif&quot;</span>,</span>
-<span id="cb12-5"><a href="#cb12-5" tabindex="-1"></a>  <span class="at">resolution =</span> <span class="fl">0.001</span>,</span>
-<span id="cb12-6"><a href="#cb12-6" tabindex="-1"></a>  <span class="at">contours   =</span> <span class="cn">TRUE</span></span>
-<span id="cb12-7"><a href="#cb12-7" tabindex="-1"></a>)</span>
-<span id="cb12-8"><a href="#cb12-8" tabindex="-1"></a><span class="fu">export_qml_style</span>(<span class="st">&quot;example_bay_suitability.tif&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="co"># Write five-band GeoTIFF and companion QGIS style file</span></span>
+<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="fu">export_geotiff</span>(</span>
+<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>  <span class="at">df         =</span> result,</span>
+<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>  <span class="at">path       =</span> <span class="st">&quot;example_bay_suitability.tif&quot;</span>,</span>
+<span id="cb13-5"><a href="#cb13-5" tabindex="-1"></a>  <span class="at">resolution =</span> <span class="fl">0.001</span>,</span>
+<span id="cb13-6"><a href="#cb13-6" tabindex="-1"></a>  <span class="at">contours   =</span> <span class="cn">TRUE</span></span>
+<span id="cb13-7"><a href="#cb13-7" tabindex="-1"></a>)</span>
+<span id="cb13-8"><a href="#cb13-8" tabindex="-1"></a><span class="fu">export_qml_style</span>(<span class="st">&quot;example_bay_suitability.tif&quot;</span>)</span></code></pre></div>
 <p>Load <code>example_bay_suitability.tif</code> into QGIS via
 <strong>Layer → Add Layer → Add Raster Layer</strong>, then right-click
 the layer and choose <strong>Load Layer Style</strong> to apply the
 <code>.qml</code> file.</p>
+<p>The GeoTIFF contains five bands:</p>
+<table>
+<colgroup>
+<col width="24%" />
+<col width="24%" />
+<col width="52%" />
+</colgroup>
+<thead>
+<tr class="header">
+<th>Band</th>
+<th>Name</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>1</td>
+<td><code>suitability</code></td>
+<td>Continuous score [0, 1]</td>
+</tr>
+<tr class="even">
+<td>2</td>
+<td><code>excluded_mask</code></td>
+<td>1 = hard-excluded by a threshold</td>
+</tr>
+<tr class="odd">
+<td>3</td>
+<td><code>n_observations</code></td>
+<td>Survey points per raster cell</td>
+</tr>
+<tr class="even">
+<td>4</td>
+<td><code>dist_to_nearest_m</code></td>
+<td>Distance to nearest survey point (m)</td>
+</tr>
+<tr class="odd">
+<td>5</td>
+<td><code>n_layers_scored</code></td>
+<td>Number of variables contributing to the score</td>
+</tr>
+</tbody>
+</table>
+<p>Band 5 is particularly useful as a data-coverage overlay: cells where
+only 2–3 variables were scored are visually distinguishable from cells
+with full data.</p>
 <hr />
 </div>
 <div id="inspecting-component-scores" class="section level2">
@@ -583,13 +643,135 @@ the layer and choose <strong>Load Layer Style</strong> to apply the
 column for every variable that was scored. Comparing these helps
 diagnose which environmental factor is the main limiting constraint at a
 site.</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a>score_cols <span class="ot">&lt;-</span> <span class="fu">grep</span>(<span class="st">&quot;^score_&quot;</span>, <span class="fu">names</span>(result), <span class="at">value =</span> <span class="cn">TRUE</span>)</span>
-<span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="co"># Mean component score per variable (higher = more suitable)</span></span>
-<span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>col_means <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">colMeans</span>(result[score_cols], <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
-<span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(col_means, <span class="dv">3</span>))</span></code></pre></div>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a>score_cols <span class="ot">&lt;-</span> <span class="fu">grep</span>(<span class="st">&quot;^score_&quot;</span>, <span class="fu">names</span>(result), <span class="at">value =</span> <span class="cn">TRUE</span>)</span>
+<span id="cb14-2"><a href="#cb14-2" tabindex="-1"></a><span class="co"># Mean component score per variable (higher = more suitable)</span></span>
+<span id="cb14-3"><a href="#cb14-3" tabindex="-1"></a>col_means <span class="ot">&lt;-</span> <span class="fu">sort</span>(<span class="fu">colMeans</span>(result[score_cols], <span class="at">na.rm =</span> <span class="cn">TRUE</span>))</span>
+<span id="cb14-4"><a href="#cb14-4" tabindex="-1"></a><span class="fu">print</span>(<span class="fu">round</span>(col_means, <span class="dv">3</span>))</span></code></pre></div>
 <p>Variables scoring consistently below 0.5 are the main limiting
 factors for <em>Ostrea edulis</em> at this site. Scores near 1.0
 indicate that variable is not constraining growth.</p>
+<hr />
+</div>
+<div id="step-9-ph-and-aragonite-saturation-scoring" class="section level2">
+<h2>Step 9: pH and aragonite saturation scoring</h2>
+<p>pH and aragonite saturation state (Ω_arag) are scored for all 17
+species. If <code>ph</code> and <code>alkalinity</code> are present in
+the merged survey data, <code>predict_oyster()</code> computes
+<code>omega_aragonite</code> automatically via
+<code>calculate_aragonite()</code> before the scoring step — no manual
+pre-processing is needed.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" tabindex="-1"></a><span class="co"># Verify aragonite was auto-calculated and scored</span></span>
+<span id="cb15-2"><a href="#cb15-2" tabindex="-1"></a><span class="st">&quot;omega_aragonite&quot;</span>  <span class="sc">%in%</span> <span class="fu">names</span>(result)      <span class="co"># column present</span></span>
+<span id="cb15-3"><a href="#cb15-3" tabindex="-1"></a><span class="st">&quot;score_ph&quot;</span>         <span class="sc">%in%</span> <span class="fu">names</span>(result)      <span class="co"># pH scored</span></span>
+<span id="cb15-4"><a href="#cb15-4" tabindex="-1"></a><span class="st">&quot;score_omega_aragonite&quot;</span> <span class="sc">%in%</span> <span class="fu">names</span>(result) <span class="co"># aragonite scored</span></span>
+<span id="cb15-5"><a href="#cb15-5" tabindex="-1"></a></span>
+<span id="cb15-6"><a href="#cb15-6" tabindex="-1"></a><span class="co"># Distribution of omega_aragonite across Example Bay</span></span>
+<span id="cb15-7"><a href="#cb15-7" tabindex="-1"></a><span class="fu">summary</span>(result<span class="sc">$</span>omega_aragonite)</span></code></pre></div>
+<p>If your sensor does not record alkalinity, you can estimate Ω_arag
+from typical open-ocean values for your region and supply it as a
+pre-computed column, or omit it — the scoring model will redistribute
+its weight across remaining variables.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" tabindex="-1"></a><span class="co"># Manual calculation: sensors gave pH only, alkalinity approximated</span></span>
+<span id="cb16-2"><a href="#cb16-2" tabindex="-1"></a>df<span class="sc">$</span>alkalinity <span class="ot">&lt;-</span> <span class="dv">2300</span>   <span class="co"># µmol/kg — representative NE Atlantic value</span></span>
+<span id="cb16-3"><a href="#cb16-3" tabindex="-1"></a>df<span class="sc">$</span>omega_aragonite <span class="ot">&lt;-</span> <span class="fu">calculate_aragonite</span>(</span>
+<span id="cb16-4"><a href="#cb16-4" tabindex="-1"></a>  <span class="at">pH          =</span> df<span class="sc">$</span>ph,</span>
+<span id="cb16-5"><a href="#cb16-5" tabindex="-1"></a>  <span class="at">alkalinity  =</span> df<span class="sc">$</span>alkalinity,</span>
+<span id="cb16-6"><a href="#cb16-6" tabindex="-1"></a>  <span class="at">temperature =</span> df<span class="sc">$</span>temperature,</span>
+<span id="cb16-7"><a href="#cb16-7" tabindex="-1"></a>  <span class="at">salinity    =</span> df<span class="sc">$</span>salinity</span>
+<span id="cb16-8"><a href="#cb16-8" tabindex="-1"></a>)</span></code></pre></div>
+<hr />
+</div>
+<div id="step-10-variable-impact-diagnostic" class="section level2">
+<h2>Step 10: Variable impact diagnostic</h2>
+<p><code>variable_impact()</code> summarises the contribution of each
+environmental variable to the suitability score across the dataset. It
+is the primary QA tool for understanding model behaviour and planning
+future surveys.</p>
+<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" tabindex="-1"></a>impact <span class="ot">&lt;-</span> <span class="fu">variable_impact</span>(result, <span class="st">&quot;ostrea_edulis&quot;</span>)</span>
+<span id="cb17-2"><a href="#cb17-2" tabindex="-1"></a><span class="fu">print</span>(impact)</span></code></pre></div>
+<p>The output columns are:</p>
+<ul>
+<li><strong><code>norm_weight_pct</code></strong> — the variable’s share
+of the total AHP weight at a typical fully-observed point.</li>
+<li><strong><code>mean_score</code></strong> — average per-variable
+score across non-excluded points. Values below ~0.5 identify
+environmental bottlenecks at this site.</li>
+<li><strong><code>mean_contribution</code></strong> —
+<code>norm_weight_pct × mean_score / 100</code>. The net weighted
+contribution to the suitability score. Highest-impact variables have
+both high weight and high score.</li>
+<li><strong><code>pct_coverage</code></strong> — percentage of
+non-excluded points where this variable was observed (non-NA). Low
+values indicate data sparsity.</li>
+</ul>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" tabindex="-1"></a><span class="co"># Variables scoring below 0.5 are potential site limiters</span></span>
+<span id="cb18-2"><a href="#cb18-2" tabindex="-1"></a>impact[impact<span class="sc">$</span>mean_score <span class="sc">&lt;</span> <span class="fl">0.5</span>, <span class="fu">c</span>(<span class="st">&quot;variable&quot;</span>, <span class="st">&quot;norm_weight_pct&quot;</span>, <span class="st">&quot;mean_score&quot;</span>)]</span>
+<span id="cb18-3"><a href="#cb18-3" tabindex="-1"></a></span>
+<span id="cb18-4"><a href="#cb18-4" tabindex="-1"></a><span class="co"># Variables with sparse data coverage</span></span>
+<span id="cb18-5"><a href="#cb18-5" tabindex="-1"></a>impact[impact<span class="sc">$</span>pct_coverage <span class="sc">&lt;</span> <span class="dv">80</span>, <span class="fu">c</span>(<span class="st">&quot;variable&quot;</span>, <span class="st">&quot;pct_coverage&quot;</span>)]</span></code></pre></div>
+<p>Use <code>sort_by = &quot;pct_coverage&quot;</code> to prioritise sensor
+deployment for the next survey, or <code>sort_by = &quot;mean_score&quot;</code>
+to focus on the worst-performing variables.</p>
+<hr />
+</div>
+<div id="step-11-fine-scale-habitat-area-analysis" class="section level2">
+<h2>Step 11: Fine-scale habitat area analysis</h2>
+<p><code>area_summary()</code> converts the point-based result into
+habitat area estimates at sub-hectare resolution. This is especially
+useful for restoration planning, where the difference between 200 m² and
+800 m² of suitable habitat is operationally significant.</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" tabindex="-1"></a><span class="co"># Auto-estimate cell size from median nearest-neighbour spacing</span></span>
+<span id="cb19-2"><a href="#cb19-2" tabindex="-1"></a>s <span class="ot">&lt;-</span> <span class="fu">area_summary</span>(result, <span class="at">verbose =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
+<p>The function prints a concise summary to the console. The returned
+list contains three elements:</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" tabindex="-1"></a><span class="co"># Per-class breakdown</span></span>
+<span id="cb20-2"><a href="#cb20-2" tabindex="-1"></a>s<span class="sc">$</span>class_summary[, <span class="fu">c</span>(<span class="st">&quot;class&quot;</span>, <span class="st">&quot;area_m2&quot;</span>, <span class="st">&quot;area_ha&quot;</span>, <span class="st">&quot;pct_total_area&quot;</span>,</span>
+<span id="cb20-3"><a href="#cb20-3" tabindex="-1"></a>                    <span class="st">&quot;mean_suitability&quot;</span>)]</span>
+<span id="cb20-4"><a href="#cb20-4" tabindex="-1"></a></span>
+<span id="cb20-5"><a href="#cb20-5" tabindex="-1"></a><span class="co"># Totals</span></span>
+<span id="cb20-6"><a href="#cb20-6" tabindex="-1"></a>s<span class="sc">$</span>total[<span class="fu">c</span>(<span class="st">&quot;surveyed_area_m2&quot;</span>, <span class="st">&quot;suitable_area_m2&quot;</span>, <span class="st">&quot;pct_suitable&quot;</span>, <span class="st">&quot;cell_size_m&quot;</span>)]</span>
+<span id="cb20-7"><a href="#cb20-7" tabindex="-1"></a></span>
+<span id="cb20-8"><a href="#cb20-8" tabindex="-1"></a><span class="co"># Contiguous patches of High + Moderate suitability</span></span>
+<span id="cb20-9"><a href="#cb20-9" tabindex="-1"></a><span class="fu">head</span>(s<span class="sc">$</span>patches)</span>
+<span id="cb20-10"><a href="#cb20-10" tabindex="-1"></a></span>
+<span id="cb20-11"><a href="#cb20-11" tabindex="-1"></a><span class="co"># Patches meeting the OSPAR 100 m² viable area threshold</span></span>
+<span id="cb20-12"><a href="#cb20-12" tabindex="-1"></a>viable <span class="ot">&lt;-</span> s<span class="sc">$</span>patches[s<span class="sc">$</span>patches<span class="sc">$</span>viable, ]</span>
+<span id="cb20-13"><a href="#cb20-13" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">nrow</span>(viable), <span class="st">&quot;viable patches; largest:&quot;</span>, <span class="fu">round</span>(<span class="fu">max</span>(viable<span class="sc">$</span>area_m2)), <span class="st">&quot;m²</span><span class="sc">\n</span><span class="st">&quot;</span>)</span></code></pre></div>
+<p>For ROV or AUV surveys with a known fixed grid resolution, supply it
+explicitly to avoid auto-estimation error:</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" tabindex="-1"></a><span class="co"># 5 m ROV grid survey</span></span>
+<span id="cb21-2"><a href="#cb21-2" tabindex="-1"></a>s5m <span class="ot">&lt;-</span> <span class="fu">area_summary</span>(result, <span class="at">cell_size_m =</span> <span class="dv">5</span>, <span class="at">viable_area_m2 =</span> <span class="dv">100</span>)</span>
+<span id="cb21-3"><a href="#cb21-3" tabindex="-1"></a></span>
+<span id="cb21-4"><a href="#cb21-4" tabindex="-1"></a><span class="co"># 25 m ADCP trackline survey, larger minimum viable unit for production scale</span></span>
+<span id="cb21-5"><a href="#cb21-5" tabindex="-1"></a>s25m <span class="ot">&lt;-</span> <span class="fu">area_summary</span>(result, <span class="at">cell_size_m =</span> <span class="dv">25</span>, <span class="at">viable_area_m2 =</span> <span class="dv">500</span>)</span></code></pre></div>
+<hr />
+</div>
+<div id="step-12-tolerance-curve-visualisation" class="section level2">
+<h2>Step 12: Tolerance curve visualisation</h2>
+<p><code>plot_tolerance()</code> draws the mathematical scoring function
+for any scored variable directly from the species tolerance parameters —
+no dataset required. This is useful for QA (confirming threshold values
+match published literature), stakeholder reporting (“here is exactly
+what the model rewards”), and creating publication-quality figures.</p>
+<div class="sourceCode" id="cb22"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb22-1"><a href="#cb22-1" tabindex="-1"></a><span class="co"># Temperature scoring curve with zone shading</span></span>
+<span id="cb22-2"><a href="#cb22-2" tabindex="-1"></a><span class="fu">plot_tolerance</span>(<span class="st">&quot;ostrea_edulis&quot;</span>, <span class="st">&quot;temperature&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" tabindex="-1"></a><span class="co"># All four seasons overlaid on a single plot</span></span>
+<span id="cb23-2"><a href="#cb23-2" tabindex="-1"></a><span class="fu">plot_tolerance</span>(<span class="st">&quot;ostrea_edulis&quot;</span>, <span class="st">&quot;temperature&quot;</span>, <span class="at">season =</span> <span class="st">&quot;all&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb24"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb24-1"><a href="#cb24-1" tabindex="-1"></a><span class="co"># Ocean acidification variables</span></span>
+<span id="cb24-2"><a href="#cb24-2" tabindex="-1"></a><span class="fu">plot_tolerance</span>(<span class="st">&quot;ostrea_edulis&quot;</span>, <span class="st">&quot;ph&quot;</span>)</span>
+<span id="cb24-3"><a href="#cb24-3" tabindex="-1"></a><span class="fu">plot_tolerance</span>(<span class="st">&quot;ostrea_edulis&quot;</span>, <span class="st">&quot;omega_aragonite&quot;</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" tabindex="-1"></a><span class="co"># Dissolved oxygen: compare tolerance between species</span></span>
+<span id="cb25-2"><a href="#cb25-2" tabindex="-1"></a><span class="fu">plot_tolerance</span>(<span class="st">&quot;ostrea_edulis&quot;</span>,        <span class="st">&quot;dissolved_oxygen&quot;</span>)</span>
+<span id="cb25-3"><a href="#cb25-3" tabindex="-1"></a><span class="fu">plot_tolerance</span>(<span class="st">&quot;crassostrea_iredalei&quot;</span>, <span class="st">&quot;dissolved_oxygen&quot;</span>)</span></code></pre></div>
+<p>Curves are colour-coded: green background = optimal zone, orange =
+acceptable/poor, red = hard-excluded. Dashed red vertical lines show the
+exclusion thresholds. The function returns a <code>ggplot2</code> object
+invisibly, so it can be saved or modified:</p>
+<div class="sourceCode" id="cb26"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb26-1"><a href="#cb26-1" tabindex="-1"></a>p <span class="ot">&lt;-</span> <span class="fu">plot_tolerance</span>(<span class="st">&quot;ostrea_edulis&quot;</span>, <span class="st">&quot;salinity&quot;</span>)</span>
+<span id="cb26-2"><a href="#cb26-2" tabindex="-1"></a>ggplot2<span class="sc">::</span><span class="fu">ggsave</span>(<span class="st">&quot;salinity_tolerance_O_edulis.png&quot;</span>, p, <span class="at">width =</span> <span class="dv">8</span>, <span class="at">height =</span> <span class="dv">5</span>)</span></code></pre></div>
+<p>For data-driven response curves showing how the model actually
+responded to observed covariate values in this survey, use
+<code>sensitivity_analysis()</code> instead.</p>
 <hr />
 </div>
 <div id="next-steps" class="section level2">
@@ -597,8 +779,8 @@ indicate that variable is not constraining growth.</p>
 <ul>
 <li><strong>Validation</strong> — if you have historical
 presence/absence records for the site, pass them to
-<code>validate_against_records()</code> to calculate AUC, TSS, and F1
-against model predictions.</li>
+<code>validate_against_records()</code> to calculate AUC, TSS, F1, and
+Brier score against model predictions.</li>
 <li><strong>Bayesian tolerance updating</strong> —
 <code>update_species_tolerances()</code> can refine the <em>O.
 edulis</em> scoring parameters from field observations at this
@@ -606,7 +788,12 @@ site.</li>
 <li><strong>Multi-species comparison</strong> — run the same workflow
 for <code>&quot;magallana_gigas&quot;</code> and call
 <code>compare_species()</code> to see which species is better suited to
-each grid cell.</li>
+each grid cell. Useful for restoration target selection.</li>
+<li><strong>Sensitivity analysis</strong> —
+<code>sensitivity_analysis()</code> produces partial dependence curves
+showing how suitability varies with each variable at the observed
+covariate values in this survey (data-driven, contrast to
+<code>plot_tolerance()</code> which is parameter-driven).</li>
 <li><strong>Live data</strong> —
 <code>fetch_live_environmental_data()</code> can replace the simulated
 temperature and salinity with real-time CMEMS model output or ICES
@@ -617,7 +804,7 @@ credential setup.</li>
 </div>
 <div id="session-info" class="section level2">
 <h2>Session info</h2>
-<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code></pre></div>
 </div>
 
 

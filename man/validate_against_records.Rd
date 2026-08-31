@@ -78,18 +78,15 @@ above 0.4 generally indicate useful predictive skill.
 }
 }
 \examples{
-\donttest{
-# Load known flat oyster records (e.g. from NBN Atlas CSV export)
-records <- read.csv("nbn_ostrea_edulis.csv")
-
-# Run prediction on same area
-result <- predict_oyster(survey, "ostrea_edulis")
-
-# Validate
-val <- validate_against_records(result, records,
-                                 presence_col = "presence")
-val$auc           # overall discrimination power
-val$tss           # skill score
-val$roc_df        # data for custom ggplot
-}
+sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
+# Synthetic balanced presence/absence records for demonstration
+set.seed(42)
+records <- data.frame(
+  lat      = result$lat[1:60],
+  lon      = result$lon[1:60],
+  presence = as.integer(runif(60) > 0.4)
+)
+val <- validate_against_records(result, records, presence_col = "presence")
+val$auc
 }

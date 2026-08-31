@@ -76,16 +76,11 @@ substrate type column if not directly measured.
 }
 
 \examples{
-\donttest{
-# With current velocity and substrate type columns
-result <- score_sediment_stability(result, current_col="current_ms", substrate_col="substrate")
+sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
 
-# After score_wave_exposure() -- wave_hs_m column already present
-result <- score_wave_exposure(result, fetch_km=15)
-result <- score_sediment_stability(result)
-
-# With measured grain size
-result$d50_mm <- c(0.25, 2.5, 15.0, 0.08)
-result <- score_sediment_stability(result)
-}
+# Using current_velocity and sediment_type columns from the survey
+result <- score_sediment_stability(result,
+  current_col = "current_velocity", substrate_col = "sediment_type")
+table(result$sediment_stability_class)
 }

@@ -56,18 +56,8 @@ using a fast union-find (disjoint set) algorithm -- no external graph
 packages required.
 }
 \examples{
-\donttest{
-result <- predict_oyster(survey, "ostrea_edulis")
+sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
 result <- analyse_connectivity(result, gap_m = 500)
-
-# Large well-connected patches are the best restoration targets
-good_patches <- subset(result,
-  connectivity_class == "large" & suitability_class == "High")
-
-# Count patches
 table(result$connectivity_class)
-
-# Visualise -- patch_id maps to distinct colours in QGIS
-export_geotiff(result, "connectivity.tif")
-}
 }

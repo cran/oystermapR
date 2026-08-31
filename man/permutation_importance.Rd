@@ -71,18 +71,16 @@ value relative to its data collection cost.
 }
 
 \examples{
-\donttest{
-records <- read.csv("nbn_ostrea_edulis.csv")
-result  <- predict_oyster(survey, "ostrea_edulis")
-
-imp <- permutation_importance(result, records, n_permutations = 100)
+sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+result <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
+set.seed(42)
+records <- data.frame(
+  lat      = result$lat[1:60],
+  lon      = result$lon[1:60],
+  presence = as.integer(runif(60) > 0.4)
+)
+imp <- permutation_importance(result, records, n_permutations = 10)
 print(imp)
-# Variable        Importance  Rank
-# temperature     0.183       1
-# salinity        0.091       2
-# depth           0.045       3
-# ...
-}
 }
 \references{
 Breiman (2001) Machine Learning 45:5-32.

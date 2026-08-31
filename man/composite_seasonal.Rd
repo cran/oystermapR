@@ -53,17 +53,15 @@ Spatial matching uses a grid cell tolerance of \code{cell_deg} decimal degrees
 \code{n_seasons_present}.
 }
 \examples{
-\donttest{
-spring <- predict_oyster(survey_spring, "ostrea_edulis")
-summer <- predict_oyster(survey_summer, "ostrea_edulis")
-autumn <- predict_oyster(survey_autumn, "ostrea_edulis")
+# Simulate three seasonal surveys using the bundled sample data
+sample_csv <- system.file("extdata", "sample_survey.csv", package = "oystermapR")
+spring <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
+summer <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
+autumn <- predict_oyster(sample_csv, "ostrea_edulis", verbose = FALSE)
 
 composite <- composite_seasonal(
   surveys = list(spring = spring, summer = summer, autumn = autumn),
   method  = "min"
 )
-
-generate_report(composite, "composite_report.html",
-                title = "Year-round Suitability Assessment")
-}
+head(composite[, c("lat", "lon", "suitability_composite", "suitability_class")])
 }
