@@ -357,11 +357,12 @@ chlorophyll_a, pH, alkalinity)</li>
 <li>Predicting suitability for <em>Ostrea edulis</em> (European Flat
 Oyster)</li>
 <li>Scoring wave exposure and HAB risk</li>
-<li>Exporting a five-band GeoTIFF for QGIS</li>
+<li>Exporting a seven-band GeoTIFF for QGIS</li>
 <li>pH and aragonite saturation scoring</li>
 <li>Variable impact diagnostic</li>
 <li>Fine-scale habitat area analysis</li>
 <li>Tolerance curve visualisation</li>
+<li>Evidence weighting, and what it changes</li>
 </ol>
 <p>The example data files (<code>example_bay_adcp.csv</code>,
 <code>example_bay_soundings.xyz</code>, and
@@ -524,10 +525,17 @@ cells were problematic before deciding whether to exclude them.</p>
 </div>
 <div id="step-6-predict-suitability" class="section level2">
 <h2>Step 6: Predict suitability</h2>
-<p><code>predict_oyster()</code> applies AHP-weighted scoring rules to
-each available variable, combines them into a suitability score in [0,
-1], and classifies locations as High / Moderate / Low / Very Low /
+<p><code>predict_oyster()</code> applies rank-reciprocal weighted
+scoring rules to each available variable, combines them into a
+suitability score in [0, 1], and classifies locations as High (&gt;=
+0.70) / Moderate (&gt;= 0.45) / Low (&gt;= 0.20) / Very Low /
 Excluded.</p>
+<p>By default the weights are <code>1 / rank</code>, normalised
+<strong>over the variables present in your data</strong>. That is worth
+holding on to: supply four layers and those four carry the whole weight
+between them, so absence and irrelevance look identical in the output.
+Step 13 covers <code>weighting = &quot;evidence&quot;</code>, which is the mode
+that says so. Everything up to that point uses the default.</p>
 <div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" tabindex="-1"></a>result <span class="ot">&lt;-</span> <span class="fu">predict_oyster</span>(</span>
 <span id="cb9-2"><a href="#cb9-2" tabindex="-1"></a>  <span class="at">data    =</span> survey_clean,</span>
 <span id="cb9-3"><a href="#cb9-3" tabindex="-1"></a>  <span class="at">species =</span> <span class="st">&quot;ostrea_edulis&quot;</span>,</span>
@@ -573,12 +581,12 @@ and fetch geometry) and a simple HAB risk score.</p>
 <div id="step-8-export-geotiff-for-qgis" class="section level2">
 <h2>Step 8: Export GeoTIFF for QGIS</h2>
 <p><code>export_geotiff()</code> interpolates the suitability scores
-onto a regular raster and writes a five-band GeoTIFF.
+onto a regular raster and writes a seven-band GeoTIFF.
 <code>export_qml_style()</code> writes a matching QGIS colour-ramp style
 file (<code>.qml</code>) so the layer renders immediately with the
-standard oystermapR colour scheme (red = excluded, green = high
-suitability).</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="co"># Write five-band GeoTIFF and companion QGIS style file</span></span>
+standard oystermapR colour scheme, plus a companion
+<code>&lt;name&gt;_insufficient.qml</code> overlay style for band 7.</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" tabindex="-1"></a><span class="co"># Write seven-band GeoTIFF and companion QGIS style files</span></span>
 <span id="cb13-2"><a href="#cb13-2" tabindex="-1"></a><span class="fu">export_geotiff</span>(</span>
 <span id="cb13-3"><a href="#cb13-3" tabindex="-1"></a>  <span class="at">df         =</span> result,</span>
 <span id="cb13-4"><a href="#cb13-4" tabindex="-1"></a>  <span class="at">path       =</span> <span class="st">&quot;example_bay_suitability.tif&quot;</span>,</span>
@@ -590,7 +598,7 @@ suitability).</p>
 <strong>Layer → Add Layer → Add Raster Layer</strong>, then right-click
 the layer and choose <strong>Load Layer Style</strong> to apply the
 <code>.qml</code> file.</p>
-<p>The GeoTIFF contains five bands:</p>
+<p>The GeoTIFF contains seven bands:</p>
 <table>
 <colgroup>
 <col width="24%" />
@@ -630,8 +638,28 @@ the layer and choose <strong>Load Layer Style</strong> to apply the
 <td><code>n_layers_scored</code></td>
 <td>Number of variables contributing to the score</td>
 </tr>
+<tr class="even">
+<td>6</td>
+<td><code>confidence</code></td>
+<td>Per-location confidence under evidence weighting; <code>NA</code>
+under rank weighting</td>
+</tr>
+<tr class="odd">
+<td>7</td>
+<td><code>insufficient_mask</code></td>
+<td>1 = the model declined to classify this location</td>
+</tr>
 </tbody>
 </table>
+<p>Bands 3, 4, 6 and 7 are the ones that say how much to trust band 1:
+band 1 will interpolate a confident-looking score across water nobody
+surveyed, so style band 4 and mask beyond a few point-spacings before
+showing the map to anyone. For band 7, load the raster a second time and
+apply <code>example_bay_suitability_insufficient.qml</code> — locations
+the model declined to classify are held out of the band 1 interpolation
+rather than asserting a value into it, and the overlay draws them as
+their own grey class rather than leaving a viewer to read the gap as a
+low score.</p>
 <p>Band 5 is particularly useful as a data-coverage overlay: cells where
 only 2–3 variables were scored are visually distinguishable from cells
 with full data.</p>
@@ -692,7 +720,7 @@ future surveys.</p>
 <p>The output columns are:</p>
 <ul>
 <li><strong><code>norm_weight_pct</code></strong> — the variable’s share
-of the total AHP weight at a typical fully-observed point.</li>
+of the total weight at a typical fully-observed point.</li>
 <li><strong><code>mean_score</code></strong> — average per-variable
 score across non-excluded points. Values below ~0.5 identify
 environmental bottlenecks at this site.</li>
@@ -774,6 +802,122 @@ responded to observed covariate values in this survey, use
 <code>sensitivity_analysis()</code> instead.</p>
 <hr />
 </div>
+<div id="step-13-evidence-weighting" class="section level2">
+<h2>Step 13: Evidence weighting</h2>
+<p>Everything above used the default <code>weighting = &quot;rank&quot;</code>.
+The weights come from the published ranks and are renormalised over
+whatever the survey measured, so the Example Bay result is a confident
+number on [0, 1] with nothing on it to say that some of <em>O.
+edulis</em>’s seventeen scored variables were never observed, and that
+one of the ones that was is a substrate proxy we invented in Step 4.</p>
+<p><code>weighting = &quot;evidence&quot;</code> changes the weights and nothing
+else. The scoring curves in Steps 6 and 12 are untouched — curve shape
+is where site-specific judgement legitimately lives. What changes is how
+the per-variable scores are combined: each variable’s weight becomes its
+published prior <code>1 / rank</code> multiplied by the layer’s measured
+<strong>reliability</strong> and its realised <strong>spread</strong>,
+normalised across the layers in play.</p>
+<p>Reliability multiplies the published prior and never replaces it.
+Weighting on measured reliability alone would promote whatever the
+instrument happens to measure well, which is circular; keeping the rank
+as the prior is what prevents that. Spread is the population SD of the
+layer’s <em>score</em>: a variable that lands in the optimal band at
+every station scores 1.0 everywhere, distinguishes nothing about
+<em>this</em> survey, and takes no weight — however important the
+species finds it, and however precisely it was measured. A zero weight
+means “did not discriminate here”, never “does not matter”.</p>
+<div id="measuring-reliability" class="section level3">
+<h3>Measuring reliability</h3>
+<p>Reliability is the correlation between two independent estimates of
+the same quantity, on one scale for every layer. Where the survey has
+repeat coverage — line against line, pass against pass — measure it
+directly:</p>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a>rel <span class="ot">&lt;-</span> <span class="fu">c</span>(</span>
+<span id="cb27-2"><a href="#cb27-2" tabindex="-1"></a>  <span class="at">depth            =</span> <span class="fu">reliability_from_replicates</span>(depth_pass1, depth_pass2),</span>
+<span id="cb27-3"><a href="#cb27-3" tabindex="-1"></a>  <span class="at">current_velocity =</span> <span class="fu">reliability_from_replicates</span>(vel_pass1,   vel_pass2)</span>
+<span id="cb27-4"><a href="#cb27-4" tabindex="-1"></a>)</span></code></pre></div>
+<p>Where a layer has no repeat coverage, inject its
+<strong>measured</strong> per-observation error instead, so every
+layer’s reliability stays on one scale rather than mixing measured
+correlations with assumed ones:</p>
+<div class="sourceCode" id="cb28"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb28-1"><a href="#cb28-1" tabindex="-1"></a><span class="co"># sigma is the between-pass disagreement over sqrt(2) -- NOT the within-cell</span></span>
+<span id="cb28-2"><a href="#cb28-2" tabindex="-1"></a><span class="co"># standard error, which describes scatter inside a cell and ignores errors that</span></span>
+<span id="cb28-3"><a href="#cb28-3" tabindex="-1"></a><span class="co"># are systematic within a pass.</span></span>
+<span id="cb28-4"><a href="#cb28-4" tabindex="-1"></a>rel[<span class="st">&quot;slope&quot;</span>] <span class="ot">&lt;-</span> <span class="fu">reliability_from_perturbation</span>(</span>
+<span id="cb28-5"><a href="#cb28-5" tabindex="-1"></a>  depth_grid,</span>
+<span id="cb28-6"><a href="#cb28-6" tabindex="-1"></a>  <span class="at">sigma  =</span> <span class="fl">0.308</span> <span class="sc">/</span> <span class="fu">sqrt</span>(<span class="dv">2</span>),</span>
+<span id="cb28-7"><a href="#cb28-7" tabindex="-1"></a>  <span class="at">derive =</span> <span class="cf">function</span>(z) <span class="fu">terrain_slope</span>(z, <span class="at">cell =</span> <span class="dv">1</span>),  <span class="co"># propagate through the derivation</span></span>
+<span id="cb28-8"><a href="#cb28-8" tabindex="-1"></a>  <span class="at">seed   =</span> <span class="dv">1</span>                                        <span class="co"># weights must be reproducible</span></span>
+<span id="cb28-9"><a href="#cb28-9" tabindex="-1"></a>)</span></code></pre></div>
+<p>A layer with no measured reliability gets <strong>no weight</strong>.
+That is the rule that keeps the method honest: nothing enters the score
+on the strength of an argument alone, however good the argument. It is
+also why every candidate layer can be offered at once — the ones that do
+not reproduce demote themselves, so inclusion costs nothing.</p>
+</div>
+<div id="running-it" class="section level3">
+<h3>Running it</h3>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" tabindex="-1"></a>rel <span class="ot">&lt;-</span> <span class="fu">c</span>(<span class="at">depth =</span> <span class="fl">0.930</span>, <span class="at">current_velocity =</span> <span class="fl">0.712</span>, <span class="at">substrate_hardness =</span> <span class="fl">0.402</span>,</span>
+<span id="cb29-2"><a href="#cb29-2" tabindex="-1"></a>         <span class="at">temperature =</span> <span class="fl">0.88</span>, <span class="at">salinity =</span> <span class="fl">0.79</span>)</span>
+<span id="cb29-3"><a href="#cb29-3" tabindex="-1"></a></span>
+<span id="cb29-4"><a href="#cb29-4" tabindex="-1"></a>ev <span class="ot">&lt;-</span> <span class="fu">predict_oyster</span>(</span>
+<span id="cb29-5"><a href="#cb29-5" tabindex="-1"></a>  <span class="at">data             =</span> survey_clean,</span>
+<span id="cb29-6"><a href="#cb29-6" tabindex="-1"></a>  <span class="at">species          =</span> <span class="st">&quot;ostrea_edulis&quot;</span>,</span>
+<span id="cb29-7"><a href="#cb29-7" tabindex="-1"></a>  <span class="at">weighting        =</span> <span class="st">&quot;evidence&quot;</span>,</span>
+<span id="cb29-8"><a href="#cb29-8" tabindex="-1"></a>  <span class="at">reliability      =</span> rel,</span>
+<span id="cb29-9"><a href="#cb29-9" tabindex="-1"></a>  <span class="at">attempted_failed =</span> <span class="st">&quot;shear_stress&quot;</span>,   <span class="co"># instrumented, returned unusable data</span></span>
+<span id="cb29-10"><a href="#cb29-10" tabindex="-1"></a>  <span class="at">verbose          =</span> <span class="cn">TRUE</span></span>
+<span id="cb29-11"><a href="#cb29-11" tabindex="-1"></a>)</span></code></pre></div>
+<p><code>attempted_failed</code> is optional and worth using. It prices
+an instrument failure in units of the species’ evidence base —
+<code>coverage_if_recovered</code> reports what the survey would have
+had if that payload had worked, which is usually more informative than
+reporting the failure on its own.</p>
+</div>
+<div id="what-comes-back" class="section level3">
+<h3>What comes back</h3>
+<div class="sourceCode" id="cb30"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb30-1"><a href="#cb30-1" tabindex="-1"></a><span class="fu">attr</span>(ev, <span class="st">&quot;evidence_weights&quot;</span>)    <span class="co"># the derivation, layer by layer</span></span>
+<span id="cb30-2"><a href="#cb30-2" tabindex="-1"></a><span class="fu">attr</span>(ev, <span class="st">&quot;evidence_coverage&quot;</span>)   <span class="co"># share of the evidence base actually observed</span></span>
+<span id="cb30-3"><a href="#cb30-3" tabindex="-1"></a></span>
+<span id="cb30-4"><a href="#cb30-4" tabindex="-1"></a><span class="co"># Both, as markdown, for a methods section</span></span>
+<span id="cb30-5"><a href="#cb30-5" tabindex="-1"></a><span class="fu">cat</span>(<span class="fu">weight_table_md</span>(ev), <span class="at">sep =</span> <span class="st">&quot;</span><span class="sc">\n</span><span class="st">&quot;</span>)</span></code></pre></div>
+<p>Every number in that table traces to either the published tolerance
+profile (the prior) or a measurement made on the survey itself
+(reliability, spread), so it is auditable line by line.</p>
+<p>The result carries <code>suitability_rank</code> and
+<code>suitability_class_rank</code> alongside the evidence columns, so
+the two weightings compare directly:</p>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" tabindex="-1"></a><span class="fu">table</span>(<span class="at">rank =</span> ev<span class="sc">$</span>suitability_class_rank, <span class="at">evidence =</span> ev<span class="sc">$</span>suitability_class)</span>
+<span id="cb31-2"><a href="#cb31-2" tabindex="-1"></a><span class="fu">mean</span>(ev<span class="sc">$</span>suitability) <span class="sc">-</span> <span class="fu">mean</span>(ev<span class="sc">$</span>suitability_rank)</span></code></pre></div>
+</div>
+<div id="coverage-and-why-it-is-reported-rather-than-applied" class="section level3">
+<h3>Coverage, and why it is reported rather than applied</h3>
+<p><code>evidence_coverage()</code> is the share of the species’
+<strong>total prior weight</strong> that the survey observed. It is
+weight-based, not count-based: the <code>data_completeness</code> column
+from Step 6 counts variables, and so treats missing a rank-1 variable
+and a rank-6 variable as equal losses. Coverage does not — missing the
+most important variable costs six times what missing the least important
+one does.</p>
+<p>Coverage is reported once at survey level and never multiplied into
+the per-cell score. Multiplying would be technically honest and
+practically useless: it would drive every location below any class
+threshold on a low-coverage survey. Location-to-location variation is
+carried by <code>confidence</code> instead, which defaults to the share
+of the evidence weight actually observed at that location. Locations
+below <code>confidence_floor</code> (default 0.5) come back as
+<code>&quot;Insufficient data&quot;</code> rather than being handed a class they
+cannot support; the continuous score is still returned for them.</p>
+<div class="sourceCode" id="cb32"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb32-1"><a href="#cb32-1" tabindex="-1"></a><span class="fu">summary</span>(ev<span class="sc">$</span>confidence)</span>
+<span id="cb32-2"><a href="#cb32-2" tabindex="-1"></a><span class="fu">sum</span>(ev<span class="sc">$</span>suitability_class <span class="sc">==</span> <span class="st">&quot;Insufficient data&quot;</span>)</span></code></pre></div>
+<p>Those locations count toward the surveyed area in
+<code>area_summary()</code> — that ground was surveyed — but never
+toward the suitable area, and they are excluded from patch analysis and
+from the top-sites list. A location the model declined to classify
+cannot be recommended as a site.</p>
+<hr />
+</div>
+</div>
 <div id="next-steps" class="section level2">
 <h2>Next steps</h2>
 <ul>
@@ -794,6 +938,10 @@ each grid cell. Useful for restoration target selection.</li>
 showing how suitability varies with each variable at the observed
 covariate values in this survey (data-driven, contrast to
 <code>plot_tolerance()</code> which is parameter-driven).</li>
+<li><strong>Reliability from a real survey</strong> — the reliability
+figures in Step 13 are illustrative. On a survey with genuine repeat
+coverage, derive them with <code>reliability_from_replicates()</code> on
+the overlapping cells rather than typing them in.</li>
 <li><strong>Live data</strong> —
 <code>fetch_live_environmental_data()</code> can replace the simulated
 temperature and salinity with real-time CMEMS model output or ICES
@@ -804,7 +952,7 @@ credential setup.</li>
 </div>
 <div id="session-info" class="section level2">
 <h2>Session info</h2>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code></pre></div>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" tabindex="-1"></a><span class="fu">sessionInfo</span>()</span></code></pre></div>
 </div>
 
 

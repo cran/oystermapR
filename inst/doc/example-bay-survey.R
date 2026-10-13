@@ -104,7 +104,7 @@ knitr::opts_chunk$set(
 # cat("HAB risk range:     ", round(range(result$hab_risk,      na.rm=TRUE), 3), "\n")
 
 ## ----export, eval = FALSE-----------------------------------------------------
-# # Write five-band GeoTIFF and companion QGIS style file
+# # Write seven-band GeoTIFF and companion QGIS style files
 # export_geotiff(
 #   df         = result,
 #   path       = "example_bay_suitability.tif",
@@ -196,6 +196,51 @@ knitr::opts_chunk$set(
 ## ----plot-tolerance-save, eval = FALSE----------------------------------------
 # p <- plot_tolerance("ostrea_edulis", "salinity")
 # ggplot2::ggsave("salinity_tolerance_O_edulis.png", p, width = 8, height = 5)
+
+## ----reliability-replicates, eval = FALSE-------------------------------------
+# rel <- c(
+#   depth            = reliability_from_replicates(depth_pass1, depth_pass2),
+#   current_velocity = reliability_from_replicates(vel_pass1,   vel_pass2)
+# )
+
+## ----reliability-perturbation, eval = FALSE-----------------------------------
+# # sigma is the between-pass disagreement over sqrt(2) -- NOT the within-cell
+# # standard error, which describes scatter inside a cell and ignores errors that
+# # are systematic within a pass.
+# rel["slope"] <- reliability_from_perturbation(
+#   depth_grid,
+#   sigma  = 0.308 / sqrt(2),
+#   derive = function(z) terrain_slope(z, cell = 1),  # propagate through the derivation
+#   seed   = 1                                        # weights must be reproducible
+# )
+
+## ----evidence-run, eval = FALSE-----------------------------------------------
+# rel <- c(depth = 0.930, current_velocity = 0.712, substrate_hardness = 0.402,
+#          temperature = 0.88, salinity = 0.79)
+# 
+# ev <- predict_oyster(
+#   data             = survey_clean,
+#   species          = "ostrea_edulis",
+#   weighting        = "evidence",
+#   reliability      = rel,
+#   attempted_failed = "shear_stress",   # instrumented, returned unusable data
+#   verbose          = TRUE
+# )
+
+## ----evidence-inspect, eval = FALSE-------------------------------------------
+# attr(ev, "evidence_weights")    # the derivation, layer by layer
+# attr(ev, "evidence_coverage")   # share of the evidence base actually observed
+# 
+# # Both, as markdown, for a methods section
+# cat(weight_table_md(ev), sep = "\n")
+
+## ----evidence-compare, eval = FALSE-------------------------------------------
+# table(rank = ev$suitability_class_rank, evidence = ev$suitability_class)
+# mean(ev$suitability) - mean(ev$suitability_rank)
+
+## ----evidence-insufficient, eval = FALSE--------------------------------------
+# summary(ev$confidence)
+# sum(ev$suitability_class == "Insufficient data")
 
 ## ----session-info-------------------------------------------------------------
 # sessionInfo()
